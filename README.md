@@ -11,7 +11,7 @@ To install the library with latest development version from git, you can run the
 python3 -m pip install -U git+https://github.com/GiovanniMCMXCIX/connect.py@master
 ```
 
-Otherwise if you have `git` you should run the following command:
+Otherwise if you don't have `git` you should run the following command:
 
 ```
 python3 -m pip install -U https://github.com/GiovanniMCMXCIX/connect.py/archive/master.zip
