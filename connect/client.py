@@ -26,6 +26,10 @@ class Client:
         if len(response) > 0:
             raise Exception("Sign-In Error: " + response.get("message", "Unknown error"))
 
+    def start(self, email, password):
+        self.login(email, password)
+        self.connect()
+
     def download(self, path, album_Id, track_Id=None, audio_format="mp3 320", get_track=False):
         if audio_format == "mp3 320":
             Download(self.session, path, album_Id, track_Id, "mp3 320", get_track)
@@ -59,16 +63,26 @@ class Client:
             return SearchSimple(self.session).artist(artist, limit, skip, use_limit, use_skip)
 
     def get_song_artist(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).artist(Id, track, release, json_data, use_json)
+        return Get(self.session).song_artist(Id, track, release, json_data, use_json)
+
+    def get_artist_name(self, vanityUri=None, json_data=None, use_json=False):
+        return Get(self.session).artist_name(vanityUri, json_data, use_json)
+
+    @staticmethod
+    def get_artist_vanityUri(json_data):
+        return Get().artist_vanityUri(json_data)
+
+    def get_artist_releases(self, vanityUri):
+        return Get(self.session).artist_releases(vanityUri)
 
     def get_song_title(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).title(Id, track, release, json_data, use_json)
+        return Get(self.session).song_title(Id, track, release, json_data, use_json)
 
     def get_streamHash(self, track_Id=None, json_data=None, use_json=False):
         return Get(self.session).streamHash(track_Id, json_data, use_json)
 
     def get_imageHash(self, album_Id=None, json_data=None, use_json=False):
-        return Get(self.session).streamHash(album_Id, json_data, use_json)
+        return Get(self.session).imageHash(album_Id, json_data, use_json)
 
     def get_release_Id(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         return Get(self.session).release_id(Id, track, release, json_data, use_json)
@@ -78,6 +92,9 @@ class Client:
 
     def get_all_releases(self):
         return Load(self.session).release_list()
+
+    def get_all_playlists(self):
+        return Load(self.session).playlist_list()
 
     def get_tracklist(self, release_Id):
         return Load(self.session).track_list(release_Id)

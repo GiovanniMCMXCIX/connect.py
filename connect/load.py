@@ -32,18 +32,25 @@ class Load:
             pprint(vars(track_raw))
             raise Exception("albums_raw or albums_raw.text is None!")
 
-        _track = json.loads(track_raw.text)
-        return _track
+        return json.loads(track_raw.text)
 
     def artist(self, vanityUri):
-        track_raw = self.session.get(ARTIST + "/" + vanityUri)
+        artist_raw = self.session.get(ARTIST + "/" + vanityUri)
 
-        if track_raw is None or track_raw.text is None:
-            pprint(vars(track_raw))
+        if artist_raw is None or artist_raw.text is None:
+            pprint(vars(artist_raw))
             raise Exception("albums_raw or albums_raw.text is None!")
 
-        _track = json.loads(track_raw.text)
-        return _track
+        return json.loads(artist_raw.text)
+
+    def artist_releases(self, vanityUri):
+        releases_raw = self.session.get(ARTIST + "/" + vanityUri + "/releases")
+
+        if releases_raw is None or releases_raw.text is None:
+            pprint(vars(releases_raw))
+            raise Exception("albums_raw or albums_raw.text is None!")
+
+        return json.loads(releases_raw.text)
 
     def playlist(self, playlist_Id):
         playlist_raw = self.session.get(PLAYLIST + "/" + playlist_Id)
@@ -52,8 +59,7 @@ class Load:
             pprint(vars(playlist_raw))
             raise Exception("albums_raw or albums_raw.text is None!")
 
-        _playlist = json.loads(playlist_raw.text)
-        return _playlist
+        return json.loads(playlist_raw.text)
 
     def track_list(self, release_Id):
         tracklist_raw = self.session.get(RELEASE + "/" + release_Id + "/tracks")
@@ -62,8 +68,7 @@ class Load:
             pprint(vars(tracklist_raw))
             raise Exception("albums_raw or albums_raw.text is None!")
 
-        _tracklist = json.loads(tracklist_raw.text)
-        return _tracklist
+        return json.loads(tracklist_raw.text)
 
     def release_list(self):
         albums_raw = self.session.get(RELEASE)
@@ -72,5 +77,13 @@ class Load:
             pprint(vars(albums_raw))
             raise Exception("albums_raw or albums_raw.text is None!")
 
-        albums = json.loads(albums_raw.text)
-        return albums
+        return json.loads(albums_raw.text)
+
+    def playlist_list(self):
+        playlists_raw = self.session.get(PLAYLIST)
+
+        if playlists_raw is None or playlists_raw.text is None:
+            pprint(vars(playlists_raw))
+            raise Exception("albums_raw or albums_raw.text is None!")
+
+        return json.loads(playlists_raw.text)

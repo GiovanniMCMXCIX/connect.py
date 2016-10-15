@@ -3,8 +3,6 @@ import json
 
 BASE = "https://connect.monstercat.com"
 API_BASE = BASE + "/api"
-CATALOG = API_BASE + "/catalog"
-RELEASE = CATALOG + "/release"
 
 
 class Get:
@@ -22,17 +20,14 @@ class Get:
             if release is False:
                 self.data = Load(self.session).track(Id)
 
-        release_id = self.data.get('_id')
-        return release_id
+        return self.data.get('_id')
 
     def id(self, json_data):
         _json = json.dumps(json_data)
         self.data = json.loads(_json)
+        return self.data.get('_id')
 
-        release_id = self.data.get('_id')
-        return release_id
-
-    def artist(self, Id=None, track=False, release=True, json_data=None, use_json=False):
+    def song_artist(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         if use_json is True:
             _json = json.dumps(json_data)
             self.data = json.loads(_json)
@@ -47,7 +42,24 @@ class Get:
         if release is False:
             return self.data.get("artistsTitle")
 
-    def title(self, Id=None, track=False, release=True, json_data=None, use_json=False):
+    def artist_name(self, vanityUri=None, json_data=None, use_json=False):
+        if use_json is True:
+            _json = json.dumps(json_data)
+            self.data = json.loads(_json)
+        else:
+            self.data = Load(self.session).artist(vanityUri)
+
+        return self.data.get('name')
+
+    def artist_vanityUri(self, json_data):
+        _json = json.dumps(json_data)
+        self.data = json.loads(_json)
+        return self.data.get('vanityUri')
+
+    def artist_releases(self, vanityUri):
+        return Load(self.session).artist_releases(vanityUri)
+
+    def song_title(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         if use_json is True:
             _json = json.dumps(json_data)
             self.data = json.loads(_json)
@@ -80,7 +92,7 @@ class Get:
             _json = json.dumps(json_data)
             self.data = json.loads(_json)
         else:
-            self.data = Load(self.session).track(album_Id)
+            self.data = Load(self.session).release(album_Id)
 
         return self.data.get("imageHashSum")
 

@@ -30,4 +30,4 @@ setup(name='connect.py',
           'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Utilities',
       ]
-)
+      )
