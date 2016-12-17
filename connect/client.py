@@ -3,8 +3,8 @@ import json
 
 from .download import Download
 from .get import Get, DownloadLink
-from .load import Load
 from .search import SearchSimple, SearchAdvanced
+from .load import Load
 
 
 class Client:
@@ -29,6 +29,14 @@ class Client:
     def start(self, email, password):
         self.login(email, password)
         self.connect()
+
+    def is_logged_in(self):
+        response_raw = self.session.get("https://connect.monstercat.com/api/self/session")
+        response = json.loads(response_raw.text)
+        if not response.get("user"):
+            return False
+        if response.get("user").get("subscriber", False) is True:
+            return True
 
     def download(self, path, album_Id, track_Id=None, audio_format="mp3 320", get_track=False):
         if audio_format == "mp3 320":

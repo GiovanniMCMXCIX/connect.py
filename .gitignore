@@ -1,8 +1,8 @@
 connect.py.egg-info/
-connect/__pycache__
+connect/__pycache__/
 build/
 dist/
-.idea
+.idea/
 *.pyc
 *.zip
 *.mp3
