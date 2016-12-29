@@ -10,7 +10,12 @@ class Get:
         self.data = None
         self.session = session
 
-    def release_id(self, Id=None, track=False, release=True, json_data=None, use_json=False):
+    def Id(self, json_data):
+        _json = json.dumps(json_data)
+        self.data = json.loads(_json)
+        return self.data.get('_id')
+
+    def release_Id(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         if use_json is True:
             _json = json.dumps(json_data)
             self.data = json.loads(_json)
@@ -22,10 +27,14 @@ class Get:
 
         return self.data.get('_id')
 
-    def id(self, json_data):
-        _json = json.dumps(json_data)
-        self.data = json.loads(_json)
-        return self.data.get('_id')
+    def catalog_Id(self, album_Id=None, json_data=None, use_json=False):
+        if use_json is True:
+            _json = json.dumps(json_data)
+            self.data = json.loads(_json)
+        else:
+            self.data = Load(self.session).release(album_Id)
+
+        return self.data.get('catalogId')
 
     def song_artist(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         if use_json is True:
@@ -38,9 +47,9 @@ class Get:
                 self.data = Load(self.session).track(Id)
 
         if track is False:
-            return self.data.get("renderedArtists")
+            return self.data.get('renderedArtists')
         if release is False:
-            return self.data.get("artistsTitle")
+            return self.data.get('artistsTitle')
 
     def artist_name(self, vanityUri=None, json_data=None, use_json=False):
         if use_json is True:
@@ -69,10 +78,25 @@ class Get:
             if release is False:
                 self.data = Load(self.session).track(Id)
 
-        if track is False:
-            return self.data.get("title")
-        if release is False:
-            return self.data.get("title")
+            return self.data.get('title')
+
+    def duration(self, track_Id=None, json_data=None, use_json=False):
+        if use_json is True:
+            _json = json.dumps(json_data)
+            self.data = json.loads(_json)
+        else:
+            self.data = Load(self.session).track(track_Id)
+
+        return round(self.data.get('duration'))
+
+    def bpm(self, track_Id=None, json_data=None, use_json=False):
+        if use_json is True:
+            _json = json.dumps(json_data)
+            self.data = json.loads(_json)
+        else:
+            self.data = Load(self.session).track(track_Id)
+
+        return round(self.data.get('bpm'))
 
     def streamHash(self, track_Id=None, json_data=None, use_json=False):
         if use_json is True:
@@ -94,7 +118,16 @@ class Get:
         else:
             self.data = Load(self.session).release(album_Id)
 
-        return self.data.get("imageHashSum")
+        return self.data.get('imageHashSum')
+
+    def urls(self, album_Id=None, json_data=None, use_json=False):
+        if use_json is True:
+            _json = json.dumps(json_data)
+            self.data = json.loads(_json)
+        else:
+            self.data = Load(self.session).release(album_Id)
+
+        return self.data.get('urls')
 
 
 class DownloadLink:

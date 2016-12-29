@@ -16,5 +16,5 @@ __title__ = 'connect'
 __author__ = 'GiovanniMCMXCIX'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2016 GiovanniMCMXCIX'
-__version__ = '0.1'
+__version__ = '0.1.1'
 __all__ = ["Client", "Download", "DownloadLink", "SearchSimple", "SearchAdvanced", "Get", "Load"]

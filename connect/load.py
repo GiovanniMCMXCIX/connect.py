@@ -61,7 +61,7 @@ class Load:
 
         return json.loads(playlist_raw.text)
 
-    def track_list(self, release_Id):
+    def tracklist(self, release_Id):
         tracklist_raw = self.session.get(RELEASE + "/" + release_Id + "/tracks")
 
         if tracklist_raw is None or tracklist_raw.text is None:
@@ -69,6 +69,24 @@ class Load:
             raise Exception("albums_raw or albums_raw.text is None!")
 
         return json.loads(tracklist_raw.text)
+
+    def playlist_tracklist(self, playlist_Id):
+        playlist_tracklist_raw = self.session.get(PLAYLIST + "/" + playlist_Id + "/tracks")
+
+        if playlist_tracklist_raw is None or playlist_tracklist_raw.text is None:
+            pprint(vars(playlist_tracklist_raw))
+            raise Exception("albums_raw or albums_raw.text is None!")
+
+        return json.loads(playlist_tracklist_raw.text)
+
+    def track_list(self):
+        track_list_raw = self.session.get(TRACK)
+
+        if track_list_raw is None or track_list_raw.text is None:
+            pprint(vars(track_list_raw))
+            raise Exception("albums_raw or albums_raw.text is None!")
+
+        return json.loads(track_list_raw.text)
 
     def release_list(self):
         albums_raw = self.session.get(RELEASE)

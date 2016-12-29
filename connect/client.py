@@ -86,17 +86,32 @@ class Client:
     def get_song_title(self, Id=None, track=False, release=True, json_data=None, use_json=False):
         return Get(self.session).song_title(Id, track, release, json_data, use_json)
 
+    def get_duration(self, track_Id=None, json_data=None, use_json=False):
+        return Get(self.session).duration(track_Id, json_data, use_json)
+
+    def get_bpm(self, track_Id=None, json_data=None, use_json=False):
+        return Get(self.session).bpm(track_Id, json_data, use_json)
+
     def get_streamHash(self, track_Id=None, json_data=None, use_json=False):
         return Get(self.session).streamHash(track_Id, json_data, use_json)
 
     def get_imageHash(self, album_Id=None, json_data=None, use_json=False):
         return Get(self.session).imageHash(album_Id, json_data, use_json)
 
+    def get_urls(self, album_Id=None, json_data=None, use_json=False):
+        return Get(self.session).urls(album_Id, json_data, use_json)
+
     def get_release_Id(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).release_id(Id, track, release, json_data, use_json)
+        return Get(self.session).release_Id(Id, track, release, json_data, use_json)
+
+    def get_catalog_Id(self, Id=None, json_data=None, use_json=False):
+        return Get(self.session).catalog_Id(Id, json_data, use_json)
 
     def get_Id(self, json_data):
-        return Get(self.session).id(json_data)
+        return Get(self.session).Id(json_data)
+
+    def get_all_tracks(self):
+        return Load(self.session).track_list()
 
     def get_all_releases(self):
         return Load(self.session).release_list()
@@ -105,7 +120,10 @@ class Client:
         return Load(self.session).playlist_list()
 
     def get_tracklist(self, release_Id):
-        return Load(self.session).track_list(release_Id)
+        return Load(self.session).tracklist(release_Id)
+
+    def get_playlist_tracklist(self, playlist_Id):
+        return Load(self.session).playlist_tracklist(playlist_Id)
 
     def load_release(self, release_Id):
         return Load(self.session).release(release_Id)
