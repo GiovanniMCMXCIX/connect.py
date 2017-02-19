@@ -1,167 +1,134 @@
-import requests
-import json
+# -*- coding: utf-8 -*-
 
-from .download import Download
-from .get import Get, DownloadLink
-from .search import SearchSimple, SearchAdvanced
-from .load import Load
+"""
+MIT License
+
+Copyright (c) 2016-2017 GiovanniMCMXCIX
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+from .http import HTTPClient
+from .release import Release
+from .track import Track
+from .artist import Artist
+from .playlist import Playlist
 
 
 class Client:
     def __init__(self):
-        self.session = requests.Session()
-        self.email = None
-        self.password = None
+        self.http = HTTPClient()
 
-    def login(self, email, password):
-        self.email = email
-        self.password = password
+    def signin(self, email: str, password: str, token: int=None):
+        if not token:
+            self.http.email_signin(email, password)
+        else:
+            self.http.two_feature_signin(email, password, token)
 
-    def connect(self):
-        payload = {"email": self.email, "password": self.password}
+    @property
+    def is_signed_in(self):
+        return self.http.is_singed_in()
 
-        response_raw = self.session.post("https://connect.monstercat.com/signin", data=payload)
-        response = json.loads(response_raw.text)
+    def signout(self):
+        self.http.signout()
 
-        if len(response) > 0:
-            raise Exception("Sign-In Error: " + response.get("message", "Unknown error"))
+    def edit_profile(self, *, name: str=None, real_name: str=None, location: str=None, password: str=None):
+        self.http.edit_profile(name=name, real_name=real_name, location=location, password=password)
 
-    def start(self, email, password):
-        self.login(email, password)
-        self.connect()
+    def add_reddit_username(self, username: str):
+        self.http.add_reddit_username(username)
 
-    def is_logged_in(self):
-        response_raw = self.session.get("https://connect.monstercat.com/api/self/session")
-        response = json.loads(response_raw.text)
-        if not response.get("user"):
-            return False
-        if response.get("user").get("subscriber", False) is True:
-            return True
+    def get_discord_gold_invite(self):
+        return self.http.get_discord_gold_invite()
 
-    def download(self, path, album_Id, track_Id=None, audio_format="mp3 320", get_track=False):
-        if audio_format == "mp3 320":
-            Download(self.session, path, album_Id, track_Id, "mp3 320", get_track)
-        elif audio_format == "mp3 128":
-            Download(self.session, path, album_Id, track_Id, "mp3 128", get_track)
-        elif audio_format == "mp3 v0":
-            Download(self.session, path, album_Id, track_Id, "mp3 v0", get_track)
-        elif audio_format == "mp3 v2":
-            Download(self.session, path, album_Id, track_Id, "mp3 v2", get_track)
-        elif audio_format == 'flac':
-            Download(self.session, path, album_Id, track_Id, "flac", get_track)
-        elif audio_format == "wav":
-            Download(self.session, path, album_Id, track_Id, "wav", get_track)
+    def get_release(self, catalog_id: str):
+        data = self.http.get_release(catalog_id)
+        return Release(**data)
 
-    def search_track(self, song: str, artist: str=None, limit: str=None, skip: str=None, use_limit=False, use_skip=False, simple=True, advanced=False):
-        if advanced is True and simple is False:
-            return SearchAdvanced(self.session).track(song, artist, limit, skip, use_limit, use_skip)
-        if simple is True and advanced is False:
-            return SearchSimple(self.session).track(song, limit, skip, use_limit, use_skip)
+    def get_track(self, track_id: str):
+        data = self.http.get_track(track_id)
+        return Track(**data)
 
-    def search_release(self, song: str, artist: str=None, limit: str=None, skip: str=None, use_limit=False, use_skip=False, simple=True, advanced=False):
-        if advanced is True and simple is False:
-            return SearchAdvanced(self.session).release(song, artist, limit, skip, use_limit, use_skip)
-        if simple is True and advanced is False:
-            return SearchSimple(self.session).release(song, limit, skip, use_limit, use_skip)
+    def get_artist(self, artist_id: str):
+        data = self.http.get_artist(artist_id)
+        return Artist(**data)
 
-    def search_artist(self, artist: str=None, limit: str=None, skip: str=None, use_limit=False, use_skip=False, simple=True, advanced=False):
-        if advanced is True and simple is False:
-            return SearchAdvanced(self.session).artist(artist, limit, skip, use_limit, use_skip)
-        if simple is True and advanced is False:
-            return SearchSimple(self.session).artist(artist, limit, skip, use_limit, use_skip)
-
-    def get_song_artist(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).song_artist(Id, track, release, json_data, use_json)
-
-    def get_artist_name(self, vanityUri=None, json_data=None, use_json=False):
-        return Get(self.session).artist_name(vanityUri, json_data, use_json)
-
-    @staticmethod
-    def get_artist_vanityUri(json_data):
-        return Get().artist_vanityUri(json_data)
-
-    def get_artist_releases(self, vanityUri):
-        return Get(self.session).artist_releases(vanityUri)
-
-    def get_song_title(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).song_title(Id, track, release, json_data, use_json)
-
-    def get_duration(self, track_Id=None, json_data=None, use_json=False):
-        return Get(self.session).duration(track_Id, json_data, use_json)
-
-    def get_bpm(self, track_Id=None, json_data=None, use_json=False):
-        return Get(self.session).bpm(track_Id, json_data, use_json)
-
-    def get_streamHash(self, track_Id=None, json_data=None, use_json=False):
-        return Get(self.session).streamHash(track_Id, json_data, use_json)
-
-    def get_imageHash(self, album_Id=None, json_data=None, use_json=False):
-        return Get(self.session).imageHash(album_Id, json_data, use_json)
-
-    def get_urls(self, album_Id=None, json_data=None, use_json=False):
-        return Get(self.session).urls(album_Id, json_data, use_json)
-
-    def get_release_Id(self, Id=None, track=False, release=True, json_data=None, use_json=False):
-        return Get(self.session).release_Id(Id, track, release, json_data, use_json)
-
-    def get_catalog_Id(self, Id=None, json_data=None, use_json=False):
-        return Get(self.session).catalog_Id(Id, json_data, use_json)
-
-    def get_Id(self, json_data):
-        return Get(self.session).Id(json_data)
-
-    def get_all_tracks(self):
-        return Load(self.session).track_list()
+    def get_playlist(self, playlist_id: str):
+        data = self.http.get_playlist(playlist_id)
+        return Playlist(**data)
 
     def get_all_releases(self):
-        return Load(self.session).release_list()
+        releases = []
+        for release in self.http.get_release_list()['results']:
+            releases.append(Release(**release))
+        return releases
+
+    def get_all_tracks(self):
+        tracks = []
+        for track in self.http.get_track_list()['results']:
+            tracks.append(Track(**track))
+        return tracks
+
+    def get_all_artists(self):
+        artists = []
+        for artist in self.http.get_artist_list()['results']:
+            artists.append(Artist(**artist))
+        return artists
 
     def get_all_playlists(self):
-        return Load(self.session).playlist_list()
+        playlists = []
+        for playlist in self.http.get_playlist_list()['results']:
+            playlists.append(Playlist(**playlist))
+        return playlists
 
-    def get_tracklist(self, release_Id):
-        return Load(self.session).tracklist(release_Id)
+    def search_release(self, term: str, limit=None, skip=None):
+        releases = []
+        for release in self.http.search_release(term, limit, skip)['results']:
+            releases.append(Release(**release))
+        return releases
 
-    def get_playlist_tracklist(self, playlist_Id):
-        return Load(self.session).playlist_tracklist(playlist_Id)
+    def search_release_advanced(self, title: str, artists: str, limit=None, skip=None):
+        releases = []
+        for release in self.http.search_release_advanced(title, artists, limit, skip)['results']:
+            releases.append(Release(**release))
+        return releases
 
-    def load_release(self, release_Id):
-        return Load(self.session).release(release_Id)
+    def search_track(self, term: str, limit=None, skip=None):
+        tracks = []
+        for track in self.http.search_track(term, limit, skip)['results']:
+            tracks.append(Track(**track))
+        return tracks
 
-    def load_track(self, track_Id):
-        return Load(self.session).track(track_Id)
+    def search_track_advanced(self, title: str, artists: str, limit=None, skip=None):
+        tracks = []
+        for track in self.http.search_track_advanced(title, artists, limit, skip)['results']:
+            tracks.append(Track(**track))
+        return tracks
 
-    def load_artist(self, vanityUri):
-        return Load(self.session).artist(vanityUri)
+    def search_artist(self, term: str, limit=None, skip=None):
+        artists = []
+        for artist in self.http.search_artist(term, limit, skip)['results']:
+            artists.append(Artist(**artist))
+        return artists
 
-    def load_playlist(self, playlist_Id):
-        return Load(self.session).playlist(playlist_Id)
-
-    @staticmethod
-    def get_download_link(album_Id, track_Id=None, audio_format="mp3 320", get_track=False):
-        if get_track is False:
-            if audio_format == "mp3 320":
-                return DownloadLink().release(album_Id=album_Id, mp3_320=True)
-            elif audio_format == "mp3 128":
-                return DownloadLink().release(album_Id=album_Id, mp3_128=True)
-            elif audio_format == "mp3 v0":
-                return DownloadLink().release(album_Id=album_Id, mp3_v0=True)
-            elif audio_format == "mp3 v2":
-                return DownloadLink().release(album_Id=album_Id, mp3_v2=True)
-            elif audio_format == "flac":
-                return DownloadLink().release(album_Id=album_Id, flac=True)
-            elif audio_format == "wav":
-                return DownloadLink().release(album_Id=album_Id, wav=True)
-        else:
-            if audio_format == "mp3 320":
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, mp3_320=True)
-            elif audio_format == "mp3 128":
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, mp3_128=True)
-            elif audio_format == "mp3 v0":
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, mp3_v0=True)
-            elif audio_format == "mp3 v2":
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, mp3_v2=True)
-            elif audio_format == 'flac':
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, flac=True)
-            elif audio_format == "wav":
-                return DownloadLink().track(album_Id=album_Id, track_Id=track_Id, wav=True)
+    def search_playlist(self, term: str, limit=None, skip=None):
+        playlists = []
+        for playlist in self.http.search_playlist(term, limit, skip)['results']:
+            playlists.append(Playlist(**playlist))
+        return playlists

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+"""
 MIT License
 
 Copyright (c) 2016-2017 GiovanniMCMXCIX
@@ -19,3 +22,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
+
+
+class ConnectException(Exception):
+    pass
+
+
+class ClientException(ConnectException):
+    pass
+
+
+class InvalidArgument(ClientException):
+    pass
+
+
+class LoginFailure(ClientException):
+    pass
+
+
+class HTTPSException(ConnectException):
+    def __init__(self, message, response=None):
+        self.response = response
+        self.message = message
+        if not self.response:
+            fmt = '{1}'
+        else:
+            fmt = '{0.reason} (status code: {0.status_code})'
+
+        if self.message and self.response:
+            fmt += ': {1}'
+
+        super().__init__(fmt.format(self.response, self.message))
+
+
+class Unauthorized(HTTPSException):
+    pass
+
+
+class Forbidden(HTTPSException):
+    pass
+
+
+class NotFound(HTTPSException):
+    pass
