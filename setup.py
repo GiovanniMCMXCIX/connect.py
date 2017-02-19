@@ -4,7 +4,7 @@ import re
 with open('requirements.txt') as f:
     requirements = f.readlines()
 
-with open('discord/__init__.py') as f:
+with open('connect/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 with open('README.md') as f:
