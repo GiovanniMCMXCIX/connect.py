@@ -29,8 +29,27 @@ from .release import Release
 
 
 class Artist:
+    """Represents a release from connect.
 
-    __slots__ = ['id', 'name', 'vanity_uri', 'profile_image_id', 'about', 'urls', 'years', '_profile_image_url', '_releases']
+    Attributes
+    ----------
+    id : str
+        The artist ID.
+    name : str
+        The artist name.
+    vanity_uri : str
+        The artist vanity uri.
+    profile_image_id : int
+        The profile image hash the artist has. Could be None.
+    urls : list
+        The artist social media urls.
+    years : list
+        The artist release years.
+    """
+
+    __slots__ = [
+        'id', 'name', 'vanity_uri', 'profile_image_id', 'about', 'urls', 'years', '_profile_image_url', '_releases'
+    ]
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
@@ -51,6 +70,7 @@ class Artist:
 
     @property
     def profile_image_url(self):
+        """Returns a friendly URL version of the profile_image_id variable the artist has."""
         if not self.profile_image_id:
             return self._profile_image_url
         else:
@@ -58,6 +78,7 @@ class Artist:
 
     @property
     def releases(self):
+        """Returns a list of connect.Release items."""
         if self._releases:
             return self._releases.values()
         else:
@@ -68,6 +89,15 @@ class Artist:
 
 
 class ArtistEntry:
+    """Represents an artist entry from a track.
+
+    Attributes
+    ----------
+    id : str
+        The artist ID.
+    name : str
+        The artist name.
+    """
 
     __slots__ = ['id', 'name']
 

@@ -29,6 +29,19 @@ from .release import ReleaseEntry
 
 
 class Playlist:
+    """Represents a release from connect.
+
+        Attributes
+        ----------
+        id : str
+            The playlist ID.
+        name : str
+            The playlist name.
+        owner_id : str
+            The owner id."""
+
+    __slots__ = ['id', 'name', 'owner_id', '_tracks']
+
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
         self.name = kwargs.pop('name')
@@ -40,6 +53,7 @@ class Playlist:
 
     @property
     def tracks(self):
+        """Returns a list of connect.playlist.PlaylistEntry items."""
         if self._tracks:
             return self._tracks.values()
         else:
@@ -53,6 +67,28 @@ class Playlist:
 
 
 class PlaylistEntry:
+    """Represents a track from a playlist.
+
+    Attributes
+    ----------
+    id : str
+        The track ID.
+    artists : str
+        The track artists.
+    title : str
+        The track title.
+    duration : int
+        The track duration.
+    bpm : int
+        The track BPM.
+    genre : str
+        The track genre.
+    genres : list
+        It usually returns a list with one item that is the same with connect.Track.genre
+    tags : list
+        The track tags.
+    """
+
     __slots__ = [
         'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags',
         '_release', '_albums_raw', '_artists_raw', '_albums', '_artists'
@@ -81,14 +117,17 @@ class PlaylistEntry:
 
     @property
     def release(self):
+        """Returns a connect.release.ReleaseEntry object."""
         return ReleaseEntry(**self._release)
 
     @property
     def albums(self):
+        """Returns a list of connect.release.Album items."""
         return self._albums.values()
 
     @property
     def get_artists(self):
+        """Returns a list of connect.artist.ArtistEntry items."""
         return self._artists.values()
 
     def _add_album(self, album):

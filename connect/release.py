@@ -26,13 +26,34 @@ SOFTWARE.
 
 from .http import HTTPClient
 from .track import Track
+from . import utils
 
 
 class Release:
+    """Represents a release from connect.
+    
+    Attributes
+    ----------
+    id : str
+        The release ID.
+    catalog_id : str
+        The Catalog ID of the release. Could be None.
+    artists : str
+        The release artists.
+    title : str
+        The release title.
+    release_date : datetime.datetime
+        A naive UTC datetime object containing the time the release was launched.
+    type : str
+        Release type.
+    artwork_id : str
+        The artwork hash the release has.
+    urls : list
+        A list of urls for supporting or listening to the release.
+    """
 
     __slots__ = [
-        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'artwork_id', 'urls',
-        '_thumbnail', '_tracks'
+        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'artwork_id', 'urls', '_thumbnail', '_tracks'
     ]
 
     def __init__(self, **kwargs):
@@ -40,7 +61,7 @@ class Release:
         self.catalog_id = kwargs.pop('catalogId', None)
         self.artists = kwargs.pop('renderedArtists', None)
         self.title = kwargs.pop('title', None)
-        self.release_date = kwargs.pop('releaseDate')
+        self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
         self.type = kwargs.pop('type')
         self.artwork_id = kwargs.pop('imageHashSum')
         self.urls = kwargs.pop('urls')
@@ -51,6 +72,7 @@ class Release:
         return '{0.artists} - {0.title}'.format(self)
 
     def thumbnails(self, resolution: int):
+        """Returns a hash to a bound resolution."""
         return self._thumbnail.get(str(resolution))
 
     def _add_track(self, track):
@@ -58,10 +80,12 @@ class Release:
 
     @property
     def artwork_url(self):
+        """Returns a friendly URL version of the artwork_id variable the release has"""
         return 'http://blobcache.monstercat.com/blobs/{0.artwork_id}'.format(self)
 
     @property
     def tracks(self):
+        """Returns a list of connect.Tracks items."""
         if self._tracks:
             return self._tracks.values()
         else:
@@ -72,6 +96,19 @@ class Release:
 
 
 class ReleaseEntry:
+    """Represents a release from a playlist track.
+
+    Attributes
+    ----------
+    id : str
+        The release ID.
+    catalog_id : str
+        The Catalog ID of the release. Could be None.
+    title : str
+        The release title.
+    release_date : datetime.datetime
+        A naive UTC datetime object containing the time the release was launched.
+    """
 
     __slots__ = ['id', 'catalog_id', 'title', 'release_date']
 
@@ -79,13 +116,24 @@ class ReleaseEntry:
         self.id = kwargs.pop('_id')
         self.catalog_id = kwargs.pop('catalogId', None)
         self.title = kwargs.pop('title')
-        self.release_date = kwargs.pop('releaseDate')
+        self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
 
     def __str__(self):
         return self.title
 
 
 class Album:
+    """Represents a release from a track.
+
+    Attributes
+    ----------
+    id : str
+        The release ID.
+    track_number : int
+        Placement in a release.
+    stream_id : str
+        The stream hash of the release.
+    """
 
     __slots__ = ['id', 'track_number', 'stream_id']
 
@@ -97,4 +145,5 @@ class Album:
 
     @property
     def stream_url(self):
+        """Returns a friendly URL version of the stream_id variable the release has."""
         return 'https://s3.amazonaws.com/data.monstercat.com/blobs/{0.stream_id}'.format(self)

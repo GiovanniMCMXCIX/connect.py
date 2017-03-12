@@ -24,7 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 import json
+import datetime
 from .errors import InvalidArgument
 
 
@@ -53,3 +55,9 @@ class DownloadLink:
 
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
+
+def parse_time(timestamp):
+    if timestamp:
+        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('Z', ''))))
+    return None

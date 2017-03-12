@@ -26,22 +26,29 @@ SOFTWARE.
 
 
 class ConnectException(Exception):
+    """Base exception class for connect.py"""
     pass
 
 
 class ClientException(ConnectException):
+    """Exception that's thrown when an operation in the class connect.Client fails."""
     pass
 
 
 class InvalidArgument(ClientException):
+    """Exception that's thrown when an argument to a function is invalid some way (e.g. wrong value or wrong type)."""
     pass
 
 
 class LoginFailure(ClientException):
+    """Exception that's thrown when the connect.Client.login 
+    function fails to log you in from improper credentials or some other misc.failure.
+    """
     pass
 
 
 class HTTPSException(ConnectException):
+    """Exception that's thrown when an HTTP request operation fails."""
     def __init__(self, message, response=None):
         self.response = response
         self.message = message
@@ -57,12 +64,15 @@ class HTTPSException(ConnectException):
 
 
 class Unauthorized(HTTPSException):
+    """Exception that's thrown for when status code 401 occurs."""
     pass
 
 
 class Forbidden(HTTPSException):
+    """Exception that's thrown for when status code 403 occurs."""
     pass
 
 
 class NotFound(HTTPSException):
+    """Exception that's thrown for when status code 404 occurs."""
     pass

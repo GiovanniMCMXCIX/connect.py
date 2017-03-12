@@ -26,6 +26,27 @@ SOFTWARE.
 
 
 class Track:
+    """Represents a track from connect.
+
+    Attributes
+    ----------
+    id : str
+        The track ID.
+    artists : str
+        The track artists.
+    title : str
+        The track title.
+    duration : int
+        The track duration.
+    bpm : int
+        The track BPM.
+    genre : str
+        The track genre.
+    genres : list
+        It usually returns a list with one item that is the same with connect.Track.genre.
+    tags : list
+        The track tags.
+    """
 
     __slots__ = [
         'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags',
@@ -54,10 +75,12 @@ class Track:
 
     @property
     def albums(self):
+        """Returns a list of connect.release.Album items."""
         return self._albums.values()
 
     @property
     def get_artists(self):
+        """Returns a list of connect.artist.ArtistEntry items."""
         return self._artists.values()
 
     def _add_album(self, album):
