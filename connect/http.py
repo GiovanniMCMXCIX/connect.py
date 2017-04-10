@@ -36,8 +36,8 @@ from . import utils, __version__
 class HTTPClient:
 
     BASE = 'https://connect.monstercat.com'
-    SIGNIN = BASE + '/signin'
-    SIGNOUT = BASE + '/signout'
+    SIGN_IN = BASE + '/signin'
+    SIGN_OUT = BASE + '/signout'
     API_BASE = BASE + '/api'
     SELF = API_BASE + '/self'
     CATALOG = API_BASE + '/catalog'
@@ -108,19 +108,19 @@ class HTTPClient:
     def post(self, *args, **kwargs):
         return self.request('POST', *args, **kwargs)
 
-    def email_signin(self, email, password):
+    def email_sign_in(self, email, password):
         payload = {
             'email': email,
             'password': password
         }
-        self.post(self.SIGNIN, json=payload)
+        self.post(self.SIGN_IN, json=payload)
 
-    def two_feature_signin(self, email, password, token):
+    def two_feature_sign_in(self, email, password, token):
         payload = {
             'token': token
         }
-        self.email_signin(email, password)
-        self.post('{0.SIGNIN}/token'.format(self), json=payload)
+        self.email_sign_in(email, password)
+        self.post('{0.SIGN_IN}/token'.format(self), json=payload)
 
     def is_singed_in(self):
         response = self.get('{0.SELF}/session'.format(self))
@@ -129,8 +129,8 @@ class HTTPClient:
         if response.get('user').get('subscriber', False) is True:
             return True
 
-    def signout(self):
-        self.post(self.SIGNOUT)
+    def sign_out(self):
+        self.post(self.SIGN_OUT)
 
     def self(self):
         return self.get(self.SELF)
@@ -212,21 +212,3 @@ class HTTPClient:
 
     def get_playlist_list(self):
         return self.get(self.PLAYLIST)
-
-    def search_release(self, term, limit=None, skip=None):
-        return self.get('{0.RELEASE}?fuzzyOr=title,{1},renderedArtists,{1}&limit={2}&skip{3}'.format(self, term, limit, skip))
-
-    def search_release_advanced(self, title, artists, limit=None, skip=None):
-        return self.get('{0.RELEASE}?fuzzy=title,{1},renderedArtists,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip))
-    
-    def search_track(self, term, limit=None, skip=None):
-        return self.get('{0.TRACK}?fuzzyOr=title,{1},artistsTitle,{1}&limit={2}&skip{3}'.format(self, term, limit, skip))
-    
-    def search_track_advanced(self, title, artists, limit=None, skip=None):
-        return self.get('{0.TRACK}?fuzzy=title,{1},artistsTitle,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip))
-
-    def search_artist(self, term, limit=None, skip=None):
-        return self.get('{0.ARTIST}?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip))
-
-    def search_playlist(self, term, limit=None, skip=None):
-        return self.get('{0.PLAYLIST}?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip))

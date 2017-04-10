@@ -53,7 +53,7 @@ class Release:
     """
 
     __slots__ = [
-        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'artwork_id', 'urls', '_thumbnail', '_tracks'
+        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'cover_url', 'urls', '_tracks'
     ]
 
     def __init__(self, **kwargs):
@@ -63,9 +63,8 @@ class Release:
         self.title = kwargs.pop('title', None)
         self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
         self.type = kwargs.pop('type')
-        self.artwork_id = kwargs.pop('imageHashSum')
+        self.cover_url = kwargs.pop('coverUrl')
         self.urls = kwargs.pop('urls')
-        self._thumbnail = kwargs.pop('thumbHashes')
         self._tracks = {}
 
     def __str__(self):
@@ -73,15 +72,10 @@ class Release:
 
     def thumbnails(self, resolution: int):
         """Returns a hash to a bound resolution."""
-        return self._thumbnail.get(str(resolution))
+        return self.cover_url + '?image_width=' + (str(resolution))
 
     def _add_track(self, track):
         self._tracks[track.id] = track
-
-    @property
-    def artwork_url(self):
-        """Returns a friendly URL version of the artwork_id variable the release has"""
-        return 'http://blobcache.monstercat.com/blobs/{0.artwork_id}'.format(self)
 
     @property
     def tracks(self):
@@ -146,4 +140,7 @@ class Album:
     @property
     def stream_url(self):
         """Returns a friendly URL version of the stream_id variable the release has."""
-        return 'https://s3.amazonaws.com/data.monstercat.com/blobs/{0.stream_id}'.format(self)
+        if not self.stream_id:
+            return None
+        else:
+            return 'https://s3.amazonaws.com/data.monstercat.com/blobs/{0.stream_id}'.format(self)

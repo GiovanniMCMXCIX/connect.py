@@ -35,21 +35,21 @@ class Client:
     def __init__(self):
         self.http = HTTPClient()
 
-    def signin(self, email: str, password: str, token: int=None):
+    def sign_in(self, email: str, password: str, token: int=None):
         """Logs in the client with the specified credentials."""
         if not token:
-            self.http.email_signin(email, password)
+            self.http.email_sign_in(email, password)
         else:
-            self.http.two_feature_signin(email, password, token)
+            self.http.two_feature_sign_in(email, password, token)
 
     @property
     def is_signed_in(self):
         """Indicates if the client has signed in successfully."""
         return self.http.is_singed_in()
 
-    def signout(self):
+    def sign_out(self):
         """Logs out of Monstercat Connect."""
-        self.http.signout()
+        self.http.sign_out()
 
     def edit_profile(self, *, name: str=None, real_name: str=None, location: str=None, password: str=None):
         """Edits the current profile of the client."""
@@ -66,23 +66,19 @@ class Client:
 
     def get_release(self, catalog_id: str):
         """Returns a release with the given ID. If not found, raises connect.errors.NotFound."""
-        data = self.http.get_release(catalog_id)
-        return Release(**data)
+        return Release(**self.http.get_release(catalog_id))
 
     def get_track(self, track_id: str):
         """Returns a track with the given ID. If not found, raises connect.errors.NotFound."""
-        data = self.http.get_track(track_id)
-        return Track(**data)
+        return Track(**self.http.get_track(track_id))
 
     def get_artist(self, artist_id: str):
         """Returns a artist with the given ID. If not found, raises connect.errors.NotFound."""
-        data = self.http.get_artist(artist_id)
-        return Artist(**data)
+        return Artist(**self.http.get_artist(artist_id))
 
     def get_playlist(self, playlist_id: str):
         """Returns a playlist with the given ID. If not found, raises connect.errors.NotFound."""
-        data = self.http.get_playlist(playlist_id)
-        return Playlist(**data)
+        return Playlist(**self.http.get_playlist(playlist_id))
 
     def get_all_releases(self):
         """Retrieves every release the client can 'access'"""
@@ -115,35 +111,40 @@ class Client:
     def search_release(self, term: str, limit=None, skip=None):
         """Searches for a release. If not found, returns an empty list"""
         releases = []
-        for release in self.http.search_release(term, limit, skip)['results']:
+        query = '?fuzzyOr=title,{1},renderedArtists,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        for release in self.http.get(self.http.RELEASE + query)['results']:
             releases.append(Release(**release))
         return releases
 
     def search_release_advanced(self, title: str, artists: str, limit=None, skip=None):
         """Searches for a release. If not found, returns an empty list"""
         releases = []
-        for release in self.http.search_release_advanced(title, artists, limit, skip)['results']:
+        query = '?fuzzy=title,{1},renderedArtists,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip)
+        for release in self.http.get(self.http.RELEASE + query)['results']:
             releases.append(Release(**release))
         return releases
 
     def search_track(self, term: str, limit=None, skip=None):
         """Searches for a track. If not found, returns an empty list"""
         tracks = []
-        for track in self.http.search_track(term, limit, skip)['results']:
+        query = '?fuzzyOr=title,{1},artistsTitle,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        for track in self.http.get(self.http.TRACK + query)['results']:
             tracks.append(Track(**track))
         return tracks
 
     def search_track_advanced(self, title: str, artists: str, limit=None, skip=None):
         """Searches for a track. If not found, returns an empty list"""
         tracks = []
-        for track in self.http.search_track_advanced(title, artists, limit, skip)['results']:
+        query = '?fuzzy=title,{1},artistsTitle,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip)
+        for track in self.http.get(self.http.TRACK + query)['results']:
             tracks.append(Track(**track))
         return tracks
 
     def search_artist(self, term: str, limit=None, skip=None):
         """Searches for an artist. If not found, returns an empty list"""
         artists = []
-        for artist in self.http.search_artist(term, limit, skip)['results']:
+        query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        for artist in self.http.get(self.http.ARTIST + query)['results']:
             artists.append(Artist(**artist))
         return artists
 
@@ -151,6 +152,7 @@ class Client:
         """Searches for a playlist. 
         If not found, returns an empty list and if not signed it, raises connect.errors.Unauthorized."""
         playlists = []
-        for playlist in self.http.search_playlist(term, limit, skip)['results']:
+        query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        for playlist in self.http.get(self.http.PLAYLIST + query)['results']:
             playlists.append(Playlist(**playlist))
         return playlists

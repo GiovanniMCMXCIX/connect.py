@@ -21,7 +21,7 @@ setup(name='connect.py',
       include_package_data=True,
       install_requires=requirements,
       classifiers=[
-          "Development Status :: 3 - Alpha",
+          'Development Status :: 4 - Beta',
           'License :: OSI Approved :: MIT License',
           'Intended Audience :: Developers',
           'Natural Language :: English',
