@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/connect.py.svg)](https://pypi.python.org/pypi/connect.py/)
 [![PyPI](https://img.shields.io/pypi/pyversions/connect.py.svg)](https://pypi.python.org/pypi/connect.py/)
+[![Build Status](https://travis-ci.org/GiovanniMCMXCIX/connect.py.svg?branch=master)](https://travis-ci.org/GiovanniMCMXCIX/connect.py)
 
 connect.py is an API wrapper for Monstercat Connect written in Python.
 
@@ -23,7 +24,7 @@ python3 -m pip install -U https://github.com/GiovanniMCMXCIX/connect.py/archive/
 
 ## Requirements
 
-- Python 3.5.2+
+- Python 3.x
 - `requests` library
 
 Usually `pip` will handle these for you.
