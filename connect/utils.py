@@ -53,6 +53,10 @@ class DownloadLink:
             raise InvalidArgument('The audio format inserted is invalid')
 
 
+def to_hex(obj):
+    return ''.join(['%' + format(ord(c), "x") for c in list(obj)])
+
+
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 

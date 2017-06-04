@@ -25,10 +25,12 @@ SOFTWARE.
 """
 
 from .http import HTTPClient
+from .errors import NotFound
 from .release import Release
 from .track import Track
 from .artist import Artist
 from .playlist import Playlist
+from .utils import to_hex
 
 
 class Client:
@@ -109,50 +111,68 @@ class Client:
         return playlists
 
     def search_release(self, term: str, limit=None, skip=None):
-        """Searches for a release. If not found, returns an empty list"""
+        """Searches for a release. If not found, raises connect.errors.NotFound"""
         releases = []
-        query = '?fuzzyOr=title,{1},renderedArtists,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        query = '?fuzzyOr=title,{1},renderedArtists,{1}&limit={2}&skip{3}'.format(self, to_hex(term), limit, skip)
         for release in self.http.get(self.http.RELEASE + query)['results']:
             releases.append(Release(**release))
-        return releases
+        if not releases:
+            raise NotFound('No release was found.')
+        else:
+            return releases
 
     def search_release_advanced(self, title: str, artists: str, limit=None, skip=None):
-        """Searches for a release. If not found, returns an empty list"""
+        """Searches for a release. If not found, raises connect.errors.NotFound"""
         releases = []
-        query = '?fuzzy=title,{1},renderedArtists,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip)
+        query = '?fuzzy=title,{1},renderedArtists,{2}&limit={3}&skip{4}'.format(self, to_hex(title), to_hex(artists), limit, skip)
         for release in self.http.get(self.http.RELEASE + query)['results']:
             releases.append(Release(**release))
-        return releases
+        if not releases:
+            raise NotFound('No release was found.')
+        else:
+            return releases
 
     def search_track(self, term: str, limit=None, skip=None):
-        """Searches for a track. If not found, returns an empty list"""
+        """Searches for a track. If not found, raises connect.errors.NotFound"""
         tracks = []
-        query = '?fuzzyOr=title,{1},artistsTitle,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        query = '?fuzzyOr=title,{1},artistsTitle,{1}&limit={2}&skip{3}'.format(self, to_hex(term), limit, skip)
         for track in self.http.get(self.http.TRACK + query)['results']:
             tracks.append(Track(**track))
-        return tracks
+        if not tracks:
+            raise NotFound('No track was found.')
+        else:
+            return tracks
 
     def search_track_advanced(self, title: str, artists: str, limit=None, skip=None):
-        """Searches for a track. If not found, returns an empty list"""
+        """Searches for a track. If not found, raises connect.errors.NotFound"""
         tracks = []
-        query = '?fuzzy=title,{1},artistsTitle,{2}&limit={3}&skip{4}'.format(self, title, artists, limit, skip)
+        query = '?fuzzy=title,{1},artistsTitle,{2}&limit={3}&skip{4}'.format(self, to_hex(title), to_hex(artists), limit, skip)
         for track in self.http.get(self.http.TRACK + query)['results']:
             tracks.append(Track(**track))
-        return tracks
+        if not tracks:
+            raise NotFound('No track was found.')
+        else:
+            return tracks
 
     def search_artist(self, term: str, limit=None, skip=None):
-        """Searches for an artist. If not found, returns an empty list"""
+        """Searches for an artist. If not found, raises connect.errors.NotFound"""
         artists = []
         query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
         for artist in self.http.get(self.http.ARTIST + query)['results']:
             artists.append(Artist(**artist))
-        return artists
+        if not artists:
+            raise NotFound('No artist was found.')
+        else:
+            return artists
 
     def search_playlist(self, term: str, limit=None, skip=None):
         """Searches for a playlist. 
-        If not found, returns an empty list and if not signed it, raises connect.errors.Unauthorized."""
+        If not found, raises connect.errors.NotFound and if not signed it, raises connect.errors.Unauthorized."""
         playlists = []
-        query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, term, limit, skip)
+        query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, to_hex(term), limit, skip)
         for playlist in self.http.get(self.http.PLAYLIST + query)['results']:
             playlists.append(Playlist(**playlist))
-        return playlists
+        if not playlists:
+            raise NotFound('No playlist was found.')
+        else:
+            return playlists

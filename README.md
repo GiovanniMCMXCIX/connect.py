@@ -28,3 +28,8 @@ python3 -m pip install -U https://github.com/GiovanniMCMXCIX/connect.py/archive/
 - `requests` library
 
 Usually `pip` will handle these for you.
+
+## Bugs
+
+- List that come from the library are positioned random in versions older than Python 3.6
+Example `['foo', 'bar', 'wew', 'lad']` comes as `['bar', 'lad', 'foo', 'wew']`
