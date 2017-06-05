@@ -3,7 +3,6 @@ connect/__pycache__/
 build/
 dist/
 .idea/
-*.pyc
 *.zip
 *.mp3
 *.flac
