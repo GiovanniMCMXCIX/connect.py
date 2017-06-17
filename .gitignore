@@ -1,5 +1,6 @@
 connect.py.egg-info/
 connect/__pycache__/
+tests/__pycache__/
 build/
 dist/
 .idea/

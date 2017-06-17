@@ -27,6 +27,7 @@ SOFTWARE.
 import re
 import json
 import datetime
+import warnings
 from .errors import InvalidArgument
 
 
@@ -53,10 +54,6 @@ class DownloadLink:
             raise InvalidArgument('The audio format inserted is invalid')
 
 
-def to_hex(obj):
-    return ''.join(['%' + format(ord(c), "x") for c in list(obj)])
-
-
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
@@ -65,3 +62,11 @@ def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('Z', ''))))
     return None
+
+
+def ignore_warnings(test_func):
+    def do_test(*args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", ResourceWarning)
+            test_func(*args, **kwargs)
+    return do_test
