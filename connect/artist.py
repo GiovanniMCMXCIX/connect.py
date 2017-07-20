@@ -109,10 +109,12 @@ class ArtistEntry:
         self.name = kwargs.pop('name')
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and isinstance(other, self.__class__)
 
     def __ne__(self, other):
-        return self.id != other.id
+        if isinstance(other, self.__class__):
+            return self.id != other.id
+        return True
 
     def __str__(self):
         return self.name

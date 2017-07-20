@@ -130,10 +130,12 @@ class ReleaseEntry:
         self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and isinstance(other, self.__class__)
 
     def __ne__(self, other):
-        return self.id != other.id
+        if isinstance(other, self.__class__):
+            return self.id != other.id
+        return True
 
     def __str__(self):
         return self.title
@@ -161,10 +163,12 @@ class Album:
         self.stream_id = None if stream_id in ['null', ''] else stream_id
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and isinstance(other, self.__class__)
 
     def __ne__(self, other):
-        return self.id != other.id
+        if isinstance(other, self.__class__):
+            return self.id != other.id
+        return True
 
     @property
     def stream_url(self):

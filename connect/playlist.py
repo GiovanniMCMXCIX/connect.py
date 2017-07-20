@@ -49,10 +49,12 @@ class Playlist:
         self._tracks = {}
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and isinstance(other, self.__class__)
 
     def __ne__(self, other):
-        return self.id != other.id
+        if isinstance(other, self.__class__):
+            return self.id != other.id
+        return True
 
     def __str__(self):
         return self.name
@@ -120,10 +122,12 @@ class PlaylistEntry:
         self._from_data()
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.id == other.id and isinstance(other, self.__class__)
 
     def __ne__(self, other):
-        return self.id != other.id
+        if isinstance(other, self.__class__):
+            return self.id != other.id
+        return True
 
     def __str__(self):
         return '{0.artists} - {0.title}'.format(self)
