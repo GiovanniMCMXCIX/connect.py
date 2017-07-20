@@ -24,34 +24,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
 import connect
 
 client = connect.Client()
 
 
-@connect.utils.ignore_warnings
-def release_test():
-    print('\n[connect.Client.get_all_releases] Got the following releases:')
-    for release in client.get_all_releases():
-        print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+class TestGetAllCatalog(unittest.TestCase):
+    @connect.utils.ignore_warnings
+    def test_release(self):
+        print('\n[connect.Client.get_all_releases]')
+        releases = []
+        for release in client.get_all_releases():
+            releases.append((str(release), len(release.tracks)))
+        print('There are {} total releases. (Normal Releases + Podcasts)'.format(len(releases)))
 
+    @connect.utils.ignore_warnings
+    def test_track(self):
+        print('\n[connect.Client.get_all_tracks]')
+        tracks = []
+        for track in client.get_all_tracks():
+            tracks.append((str(track), len(track.albums)))
+        print('There are {} total tracks.'.format(len(tracks)))
 
-@connect.utils.ignore_warnings
-def track_test():
-    print('\n[connect.Client.get_all_tracks] Got the following tracks:')
-    for track in client.get_all_tracks():
-        print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
-
-
-@connect.utils.ignore_warnings
-def artist_test():
-    print('\n[connect.Client.get_all_artists] Got the following artists:')
-    for artist in client.get_all_artists():
-        print("{0.name} that has {1} release(s) and it's featured on the following year(s): {2}".format(artist, len(artist.releases),
-                                                                                                              ', '.join(str(year) for year in artist.years)))
-
-
-if __name__ == "__main__":
-    release_test()
-    track_test()
-    artist_test()
+    @connect.utils.ignore_warnings
+    def test_artist(self):
+        print('\n[connect.Client.get_all_artists]')
+        artists = []
+        for artist in client.get_all_artists():
+            artists.append((str(artist), len(artist.releases)))
+        print('There are {} total artists.'.format(len(artists)))

@@ -24,45 +24,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
 import connect
 
 client = connect.Client()
 
 
-@connect.utils.ignore_warnings
-def release_test():
-    releases = client.search_release('friends')
-    print('\n[connect.Client.search_release] Found the following:')
-    for release in releases:
-        print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
-    releases = client.search_release_advanced('FTW', 'Lets Be Friends')
-    print('\n[connect.Client.search_release_advanced] Found the following:')
-    for release in releases:
-        print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+class TestSearch(unittest.TestCase):
+    @connect.utils.ignore_warnings
+    def test_release(self):
+        releases = client.search_release('friends')
+        print('\n[connect.Client.search_release] Found the following:')
+        for release in releases:
+            print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+        self.assertEqual(releases[0], client.get_release('MCEP071'))
 
+    @connect.utils.ignore_warnings
+    def test_release_adv(self):
+        releases = client.search_release_advanced('FTW', 'Lets Be Friends')
+        print('\n[connect.Client.search_release_advanced] Found the following:')
+        for release in releases:
+            print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+        self.assertEqual(releases[0], client.get_release('MCS194'))
 
-@connect.utils.ignore_warnings
-def track_test():
-    tracks = client.search_track('you')
-    print('\n[connect.Client.search_track] Found the following:')
-    for track in tracks:
-        print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
-    tracks = client.search_track_advanced("Do You Don't You", 'Haywyre')
-    print('\n[connect.Client.search_track_advanced] Found the following:')
-    for track in tracks:
-        print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
+    @connect.utils.ignore_warnings
+    def test_track(self):
+        tracks = client.search_track('you')
+        print('\n[connect.Client.search_track] Found the following:')
+        for track in tracks:
+            print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
+        self.assertEqual(tracks[0], client.get_track('5175cd4e0695c7ac5d000033'))
 
+    @connect.utils.ignore_warnings
+    def test_track_adv(self):
+        tracks = client.search_track_advanced("Do You Don't You", 'Haywyre')
+        print('\n[connect.Client.search_track_advanced] Found the following:')
+        for track in tracks:
+            print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
+        self.assertEqual(tracks[0], client.get_track('56a2773c5050dd875854cf85'))
 
-@connect.utils.ignore_warnings
-def artist_test():
-    artists = client.search_artist('grant')
-    print('\n[connect.Client.search_artist] Found the following:')
-    for artist in artists:
-        print("{0.name}, that has {1} release(s) and it's featured on the following year(s): {2}".format(artist, len(artist.releases),
-                                                                                                         ', '.join(str(year) for year in artist.years)))
-
-
-if __name__ == "__main__":
-    release_test()
-    track_test()
-    artist_test()
+    @connect.utils.ignore_warnings
+    def test_artist(self):
+        artists = client.search_artist('grant')
+        print('\n[connect.Client.search_artist] Found the following:')
+        for artist in artists:
+            print("{0.name}, that has {1} release(s) and it's featured on the following year(s): {2}".format(artist, len(artist.releases),
+                                                                                                             ', '.join(str(year) for year in artist.years)))
+        self.assertEqual(artists[1], client.get_artist('grant'))
