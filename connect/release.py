@@ -46,14 +46,21 @@ class Release:
         A naive UTC datetime object containing the time the release was launched.
     type : str
         Release type.
-    artwork_id : str
-        The artwork hash the release has.
-    urls : list
+    urls : List[str]
         A list of urls for supporting or listening to the release.
+    downloadable : bool
+        Indicates if the release can be downloaded.
+    streamable : bool
+        Indicates if the release can be streamed.
+    early_access : bool
+        Indicates if the release is in early access for gold users.
+    free_download : bool
+        Indicates if the track can be downloaded for free.
     """
 
     __slots__ = [
-        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'cover_url', 'urls', '_tracks'
+        'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'cover_url',
+        'urls', 'downloadable', 'streamable', 'early_access', 'free_download', '_tracks'
     ]
 
     def __init__(self, **kwargs):
@@ -65,14 +72,21 @@ class Release:
         self.type = kwargs.pop('type')
         self.cover_url = kwargs.pop('coverUrl')
         self.urls = kwargs.pop('urls')
+        self.downloadable = kwargs.pop('downloadable', None)
+        self.streamable = kwargs.pop('streamable', None)
+        self.early_access = kwargs.pop('inEarlyAccess', None)
+        self.free_download = kwargs.pop('freeDownloadForUsers')
         self._tracks = {}
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __str__(self):
         return '{0.artists} - {0.title}'.format(self)
 
     def thumbnails(self, resolution: int):
         """Returns a hash to a bound resolution."""
-        return self.cover_url + '?image_width=' + (str(resolution))
+        return '{}?image_width={}'.format(self.cover_url, resolution)
 
     def _add_track(self, track):
         self._tracks[track.id] = track
@@ -81,12 +95,12 @@ class Release:
     def tracks(self):
         """Returns a list of connect.Tracks items."""
         if self._tracks:
-            return self._tracks.values()
+            return list(self._tracks.values())
         else:
             for t_data in HTTPClient().get_release_tracklist(self.id)['results']:
                 track = Track(**t_data)
                 self._add_track(track)
-            return self._tracks.values()
+            return list(self._tracks.values())
 
 
 class ReleaseEntry:
@@ -112,6 +126,9 @@ class ReleaseEntry:
         self.title = kwargs.pop('title')
         self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
 
+    def __eq__(self, other):
+        return self.id == other.id
+
     def __str__(self):
         return self.title
 
@@ -136,6 +153,9 @@ class Album:
         self.track_number = kwargs.pop('trackNumber')
         stream_id = kwargs.pop('streamHash')
         self.stream_id = None if stream_id in ['null', ''] else stream_id
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     @property
     def stream_url(self):

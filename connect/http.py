@@ -45,6 +45,7 @@ class HTTPClient:
     TRACK = CATALOG + '/track'
     RELEASE = CATALOG + '/release'
     ARTIST = CATALOG + '/artist'
+    BROWSE = CATALOG + '/browse'
 
     def __init__(self):
         self.session = requests.Session()

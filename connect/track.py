@@ -42,15 +42,23 @@ class Track:
         The track BPM.
     genre : str
         The track genre.
-    genres : list
-        It usually returns a list with one item that is the same with connect.Track.genre.
-    tags : list
+    genres : List[str]
+        It usually returns a list with one item that is the same with :attr:`connect.Track.genre`.
+    tags : List[str]
         The track tags.
+    downloadable : bool
+        Indicates if the track can be downloaded.
+    streamable : bool
+        Indicates if the track can be streamed.
+    early_access : bool
+        Indicates if the track is in early access for gold users.
+    free_download : bool
+        Indicates if the track can be downloaded for free.
     """
 
     __slots__ = [
-        'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags',
-        '_albums_raw', '_artists_raw', '_albums', '_artists'
+        'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags', 'downloadable',
+        'streamable', 'early_access', 'free_download', '_albums_raw', '_artists_raw', '_albums', '_artists'
     ]
 
     def __init__(self, **kwargs):
@@ -64,24 +72,30 @@ class Track:
         self.genre = kwargs.pop('genre', None)
         self.genres = kwargs.pop('genres')
         self.tags = kwargs.pop('tags')
+        self.downloadable = kwargs.pop('downloadable')
+        self.streamable = kwargs.pop('streamable')
+        self.early_access = kwargs.pop('inEarlyAccess')
+        self.free_download = kwargs.pop('freeDownloadForUsers')
         self._albums_raw = kwargs.pop('albums')
         self._artists_raw = kwargs.pop('artists')
         self._albums = {}
         self._artists = {}
         self._from_data()
 
+    def __eq__(self, other):
+        return self.id == other.id
+
     def __str__(self):
         return '{0.artists} - {0.title}'.format(self)
 
     @property
     def albums(self):
-        """Returns a list of connect.release.Album items."""
-        return self._albums.values()
+        """List[:class:`release.Album`]: A list of Albums that this track is a part of."""
+        return list(self._albums.values())
 
-    @property
     def get_artists(self):
-        """Returns a list of connect.artist.ArtistEntry items."""
-        return self._artists.values()
+        """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""
+        return list(self._artists.values())
 
     def _add_album(self, album):
         self._albums[album.id] = album

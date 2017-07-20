@@ -39,16 +39,19 @@ class Artist:
         The artist name.
     vanity_uri : str
         The artist vanity uri.
-    profile_image_id : int
-        The profile image hash the artist has. Could be None.
-    urls : list
+    profile_image_id : str
+        The profile image hash the artist has. Could be None. Soon to be obsolete.
+    profile_image_url : str
+        Returns the profile image URL that the artist has.
+    urls : List[str]
         The artist social media urls.
-    years : list
+    years : List[int]
         The artist release years.
     """
 
     __slots__ = [
-        'id', 'name', 'vanity_uri', 'profile_image_id', 'about', 'urls', 'years', '_profile_image_url', '_releases'
+        'id', 'name', 'vanity_uri', 'profile_image_id', 'profile_image_url',
+        'about', 'bookings', 'management_detail', 'urls', 'years', '_releases'
     ]
 
     def __init__(self, **kwargs):
@@ -56,11 +59,16 @@ class Artist:
         self.name = kwargs.pop('name')
         self.vanity_uri = kwargs.pop('vanityUri', None)
         self.profile_image_id = kwargs.pop('profileImageBlobId', None)
-        self._profile_image_url = kwargs.pop('profileImageUrl')
+        self.profile_image_url = kwargs.pop('profileImageUrl')
         self.about = kwargs.pop('about', None)
+        self.bookings = kwargs.pop('bookings', None)
+        self.management_detail = kwargs.pop('managementDetail', None)
         self.urls = kwargs.pop('urls')
         self.years = kwargs.pop('years')
         self._releases = {}
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __str__(self):
         return self.name
@@ -69,23 +77,15 @@ class Artist:
         self._releases[release.id] = release
 
     @property
-    def profile_image_url(self):
-        """Returns a friendly URL version of the profile_image_id variable the artist has."""
-        if not self.profile_image_id:
-            return self._profile_image_url
-        else:
-            return 'http://blobcache.monstercat.com/blobs/{0.profile_image_id}'.format(self)
-
-    @property
     def releases(self):
-        """Returns a list of connect.Release items."""
+        """List[:class:`Release`]: A list of the artist's releases or appearances."""
         if self._releases:
-            return self._releases.values()
+            return list(self._releases.values())
         else:
             for r_data in HTTPClient().get_artist_releases(self.id)['results']:
                 release = Release(**r_data)
                 self._add_release(release)
-            return self._releases.values()
+            return list(self._releases.values())
 
 
 class ArtistEntry:
@@ -104,6 +104,9 @@ class ArtistEntry:
     def __init__(self, **kwargs):
         self.id = kwargs.pop('artistId')
         self.name = kwargs.pop('name')
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __str__(self):
         return self.name
