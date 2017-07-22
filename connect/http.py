@@ -262,10 +262,7 @@ class HTTPClient:
     def get_playlist_tracklist(self, playlist_id):
         return self.get('{0.PLAYLIST}/{1}/tracks'.format(self, playlist_id))
 
-    def get_all_tracks(self, limit=0, skip=0):
-        return self.get('{0.TRACK}?limit={1}&skip{2}'.format(self, limit, skip))
-
-    def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=0, skip=0):
+    def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=None, skip=None):
         query = []
         if singles:
             query.append('type,Single')
@@ -280,11 +277,14 @@ class HTTPClient:
         else:
             return self.get('{0.RELEASE}?fuzzyOr={1}&limit={2}&skip={3}'.format(self, ','.join(query), limit, skip))
 
-    def get_all_artists(self, year=None, limit=0, skip=0):
+    def get_all_tracks(self, limit=None, skip=None):
+        return self.get('{0.TRACK}?limit={1}&skip{2}'.format(self, limit, skip))
+
+    def get_all_artists(self, year=None, limit=None, skip=None):
         base = '{0.ARTIST}?limit={1}&skip={2}'.format(self, limit, skip)
         if year:
             base.__add__('&fuzzy=year,{}'.format(year))
         return self.get(base)
 
-    def get_all_playlists(self):
-        return self.get(self.PLAYLIST)
+    def get_all_playlists(self, *, limit=None, skip=None):
+        return self.get('{0.PLAYLIST}?limit={1}&skip={2}'.format(self, limit, skip))

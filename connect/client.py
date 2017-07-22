@@ -177,7 +177,7 @@ class Client:
         """
         return Playlist(**self.http.get_playlist(playlist_id))
 
-    def get_all_releases(self, *, singles: bool = True, eps: bool = True, albums: bool = True, podcasts: bool = False, limit: int = 0, skip: int = 0):
+    def get_all_releases(self, *, singles: bool = True, eps: bool = True, albums: bool = True, podcasts: bool = False, limit: int = None, skip: int = None):
         """Retrieves every release the client can access.
 
         Parameters
@@ -200,7 +200,7 @@ class Client:
             releases.append(Release(**release))
         return releases
 
-    def get_all_tracks(self, *, limit: int = 0, skip: int = 0):
+    def get_all_tracks(self, *, limit: int = None, skip: int = None):
         """Retrieves every track the client can access.
 
         Parameters
@@ -215,7 +215,7 @@ class Client:
             tracks.append(Track(**track))
         return tracks
 
-    def get_all_artists(self, *, year: int = None, limit: int = 0, skip: int = 0):
+    def get_all_artists(self, *, year: int = None, limit: int = None, skip: int = None):
         """Retrieves every artist the client can access.
 
         Parameters
@@ -232,7 +232,7 @@ class Client:
             artists.append(Artist(**artist))
         return artists
 
-    def get_all_playlists(self):
+    def get_all_playlists(self, *, limit: int = None, skip: int = None):
         """Retrieves every playlist the client can access.
 
         Raises
@@ -241,11 +241,11 @@ class Client:
             The client isn't signed in.
         """
         playlists = []
-        for playlist in self.http.get_all_playlists()['results']:
+        for playlist in self.http.get_all_playlists(limit=limit, skip=skip)['results']:
             playlists.append(Playlist(**playlist))
         return playlists
 
-    def search_release(self, term: str, *, limit: int = 0, skip: int = 0):
+    def search_release(self, term: str, *, limit: int = None, skip: int = None):
         """Searches for a release.
 
         Parameters
@@ -271,7 +271,7 @@ class Client:
         else:
             return releases
 
-    def search_release_advanced(self, title: str, artists: str, *, limit: int = 0, skip: int = 0):
+    def search_release_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None):
         """Searches for a release in a more advanced way.
 
         Parameters
@@ -299,7 +299,7 @@ class Client:
         else:
             return releases
 
-    def search_track(self, term: str, *, limit: int = 0, skip: int = 0):
+    def search_track(self, term: str, *, limit: int = None, skip: int = None):
         """Searches for a track.
 
         Parameters
@@ -325,7 +325,7 @@ class Client:
         else:
             return tracks
 
-    def search_track_advanced(self, title: str, artists: str, *, limit: int = 0, skip: int = 0):
+    def search_track_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None):
         """Searches for a track in a more advanced way.
 
         Parameters
@@ -353,7 +353,7 @@ class Client:
         else:
             return tracks
 
-    def search_artist(self, term: str, *, year: int = None, limit: int = 0, skip: int = 0):
+    def search_artist(self, term: str, *, year: int = None, limit: int = None, skip: int = None):
         """Searches for a artist.
 
         Parameters
@@ -383,7 +383,7 @@ class Client:
         else:
             return artists
 
-    def search_playlist(self, term: str, *, limit: int = 0, skip: int = 0):
+    def search_playlist(self, term: str, *, limit: int = None, skip: int = None):
         """Searches for a playlist.
 
         Parameters
