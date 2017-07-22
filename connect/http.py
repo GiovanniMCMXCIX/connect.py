@@ -34,7 +34,6 @@ from . import utils, __version__
 
 
 class HTTPClient:
-
     BASE = 'https://connect.monstercat.com'
     SIGN_IN = BASE + '/signin'
     SIGN_OUT = BASE + '/signout'
@@ -49,6 +48,7 @@ class HTTPClient:
 
     def __init__(self):
         self.session = requests.Session()
+        self.download_link_gen = utils.DownloadLinkGenerator()
 
         user_agent = 'ConnectBot (https://github.com/GiovanniMCMXCIX/connect.py {0}) ' \
                      'Python/{1[0]}.{1[1]} requests/{2}'
@@ -67,16 +67,28 @@ class HTTPClient:
         response = self.session.request(method, url, **kwargs)
         try:
             if 'stream' in kwargs:
+                def raise_error(error, use_response=False):
+                    try:
+                        if use_response:
+                            raise error(json.loads(response.text).pop('message', 'Unknown error'), response)
+                        else:
+                            raise error(json.loads(response.text).pop('message', 'Unknown error'))
+                    except json.decoder.JSONDecodeError:
+                        if use_response:
+                            raise error({'message': response.text} if response.text else 'Unknown error', response)
+                        else:
+                            raise error({'message': response.text} if response.text else 'Unknown error')
+
                 if 300 > response.status_code >= 200:
                     return response
                 elif response.status_code == 401:
-                    raise Unauthorized('You are not authorized to perform this action.')
+                    raise_error(Unauthorized)
                 elif response.status_code == 403:
-                    raise Forbidden('You do not have permission to access this resource.')
+                    raise_error(Forbidden)
                 elif response.status_code == 404:
-                    raise NotFound('Requested resource not found.')
+                    raise_error(NotFound)
                 else:
-                    raise HTTPSException(None, response)
+                    raise_error(HTTPSException, True)
             else:
                 try:
                     data = json.loads(response.text)
@@ -86,14 +98,13 @@ class HTTPClient:
                 if 300 > response.status_code >= 200:
                     return data
                 elif response.status_code == 401:
-                    raise Unauthorized(data.get('message', 'Unknown error'))
+                    raise Unauthorized(data.pop('message', 'Unknown error'))
                 elif response.status_code == 403:
-                    raise Forbidden(data.get('message', 'Unknown error'))
+                    raise Forbidden(data.pop('message', 'Unknown error'))
                 elif response.status_code == 404:
-                    raise NotFound(data.get('message', 'Unknown error'))
+                    raise NotFound(data.pop('message', 'Unknown error'))
                 else:
-                    message = None if not data.get('message', None) else data.get('message')
-                    raise HTTPSException(message, response)
+                    raise HTTPSException(data.pop('message', 'Unknown error'), response)
         except Exception as e:
             raise e
 
@@ -195,8 +206,7 @@ class HTTPClient:
         return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
 
     def download_release(self, album_id, path, audio_format):
-        url = utils.DownloadLink().release(album_id, audio_format)
-        r = self.get(url, stream=True)
+        r = self.get(self.download_link_gen.release(album_id, audio_format), stream=True)
         filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
         full_path = path + "/" + filename
 
@@ -207,8 +217,18 @@ class HTTPClient:
         return True
 
     def download_track(self, album_id, track_id, path, audio_format):
-        url = utils.DownloadLink().track(album_id, track_id, audio_format)
-        r = self.get(url, stream=True)
+        r = self.get(self.download_link_gen.track(album_id, track_id, audio_format), stream=True)
+        filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
+        full_path = path + "/" + filename
+
+        with open(full_path, 'wb') as file:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    file.write(chunk)
+        return True
+
+    def download_playlist(self, playlist_id, page, path, audio_format):
+        r = self.get(self.download_link_gen.playlist(playlist_id, audio_format, page), stream=True)
         filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
         full_path = path + "/" + filename
 
@@ -242,10 +262,10 @@ class HTTPClient:
     def get_playlist_tracklist(self, playlist_id):
         return self.get('{0.PLAYLIST}/{1}/tracks'.format(self, playlist_id))
 
-    def get_all_tracks(self):
-        return self.get(self.TRACK)
+    def get_all_tracks(self, limit=0, skip=0):
+        return self.get('{0.TRACK}?limit={1}&skip{2}'.format(self, limit, skip))
 
-    def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False):
+    def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=0, skip=0):
         query = []
         if singles:
             query.append('type,Single')
@@ -255,13 +275,16 @@ class HTTPClient:
             query.append('type,Album')
         if podcasts:
             query.append('type,Podcast')
-        if not singles or not eps or not albums or not podcasts:
+        if not singles and not eps and not albums and not podcasts:
             return self.get('{0.RELEASE}?fuzzyOr=type,None'.format(self))
         else:
-            return self.get('{0.RELEASE}?fuzzyOr={1}'.format(self, ','.join(query)))
+            return self.get('{0.RELEASE}?fuzzyOr={1}&limit={2}&skip={3}'.format(self, ','.join(query), limit, skip))
 
-    def get_all_artists(self):
-        return self.get(self.ARTIST)
+    def get_all_artists(self, year=None, limit=0, skip=0):
+        base = '{0.ARTIST}?limit={1}&skip={2}'.format(self, limit, skip)
+        if year:
+            base.__add__('&fuzzy=year,{}'.format(year))
+        return self.get(base)
 
     def get_all_playlists(self):
         return self.get(self.PLAYLIST)

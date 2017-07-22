@@ -31,25 +31,31 @@ import warnings
 from .errors import InvalidArgument
 
 
-class DownloadLink:
-    def __init__(self):
-        self.url = None
+class DownloadLinkGenerator:
 
-    def release(self, album_id, audio_format):
+    BASE = 'https://connect.monstercat.com'
+    API_BASE = BASE + '/api'
+    RELEASE = API_BASE + '/release'
+    PLAYLIST = API_BASE + '/playlist'
+
+    def release(self, release_id, audio_format):
         formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
         if audio_format in formats:
-            self.url = "https://connect.monstercat.com/api/release/" + album_id + \
-                       "/download?method=download&type=" + audio_format
-            return self.url
+            return '{0.RELEASE}/{1}/download?method=download&type={2}'.format(self, release_id, audio_format)
         else:
             raise InvalidArgument('The audio format inserted is invalid')
 
-    def track(self, album_id, track_id, audio_format):
+    def track(self, release_id, track_id, audio_format):
         formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
         if audio_format in formats:
-            self.url = "https://connect.monstercat.com/api/release/" + album_id + \
-                       "/download?method=download&type=" + audio_format + "&track=" + track_id
-            return self.url
+            return '{0.RELEASE}/{1}/download?method=download&type={2}&track={3}'.format(self, release_id, audio_format, track_id)
+        else:
+            raise InvalidArgument('The audio format inserted is invalid')
+
+    def playlist(self, playlist_id, audio_format, page=1):
+        formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
+        if audio_format in formats:
+            return '{0.PLAYLIST}/{1}/download?method=download&type={2}&page={3}'.format(self, playlist_id, audio_format, page)
         else:
             raise InvalidArgument('The audio format inserted is invalid')
 

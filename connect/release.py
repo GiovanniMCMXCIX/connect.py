@@ -160,7 +160,7 @@ class Album:
         self.id = kwargs.pop('albumId')
         self.track_number = kwargs.pop('trackNumber')
         stream_id = kwargs.pop('streamHash')
-        self.stream_id = None if stream_id in ['null', ''] else stream_id
+        self.stream_id = None if stream_id in [None, ''] else stream_id
 
     def __eq__(self, other):
         return self.id == other.id and isinstance(other, self.__class__)
