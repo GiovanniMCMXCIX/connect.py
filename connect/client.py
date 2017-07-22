@@ -61,7 +61,7 @@ class Client:
         """Adds the reddit username to the current profile of the client."""
         self.http.add_reddit_username(username)
 
-    def get_discord_gold_invite(self):
+    def get_discord_invite(self):
         """Gets an invite for the gold discord channel on the monstercat discord guild, 
         needs gold subscription in order to access that channel"""
         return self.http.get_discord_gold_invite()
@@ -85,28 +85,28 @@ class Client:
     def get_all_releases(self):
         """Retrieves every release the client can 'access'"""
         releases = []
-        for release in self.http.get_release_list()['results']:
+        for release in self.http.get_all_releases()['results']:
             releases.append(Release(**release))
         return releases
 
     def get_all_tracks(self):
         """Retrieves every track the client can 'access'"""
         tracks = []
-        for track in self.http.get_track_list()['results']:
+        for track in self.http.get_all_tracks()['results']:
             tracks.append(Track(**track))
         return tracks
 
     def get_all_artists(self):
         """Retrieves every artist the client can 'access'"""
         artists = []
-        for artist in self.http.get_artist_list()['results']:
+        for artist in self.http.get_all_artists()['results']:
             artists.append(Artist(**artist))
         return artists
 
     def get_all_playlists(self):
         """Retrieves every playlist the client can access. If not signed it, raises connect.errors.Unauthorized."""
         playlists = []
-        for playlist in self.http.get_playlist_list()['results']:
+        for playlist in self.http.get_all_playlists()['results']:
             playlists.append(Playlist(**playlist))
         return playlists
 

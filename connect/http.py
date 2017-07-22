@@ -55,9 +55,8 @@ class HTTPClient:
         self.user_agent = user_agent.format(__version__, sys.version_info, requests.__version__)
 
     def request(self, method, url, **kwargs):
-        response = self.session.request(method, url, **kwargs)
         headers = {
-            'User-Agent': self.user_agent,
+            'User-Agent': self.user_agent
         }
 
         if 'json' in kwargs:
@@ -65,6 +64,7 @@ class HTTPClient:
             kwargs['data'] = utils.to_json(kwargs.pop('json'))
 
         kwargs['headers'] = headers
+        response = self.session.request(method, url, **kwargs)
         try:
             if 'stream' in kwargs:
                 if 300 > response.status_code >= 200:
@@ -78,7 +78,10 @@ class HTTPClient:
                 else:
                     raise HTTPSException(None, response)
             else:
-                data = json.loads(response.text)
+                try:
+                    data = json.loads(response.text)
+                except json.decoder.JSONDecodeError:
+                    data = {'message': response.text} if response.text else None
 
                 if 300 > response.status_code >= 200:
                     return data
@@ -136,17 +139,45 @@ class HTTPClient:
     def self(self):
         return self.get(self.SELF)
 
+    def create_playlist(self, name, *, public=False, entries=None):
+        payload = {
+            'name': name,
+            'public': public
+        }
+        if entries:
+            payload['tracks'] = entries
+        return self.post('{0.PLAYLIST}'.format(self), json=payload)
+
     def edit_profile(self, *, name=None, real_name=None, location=None, password=None):
         payload = {}
         if name:
             payload['name'] = name
-        elif real_name:
+        if real_name:
             payload['realName'] = real_name
-        elif location:
+        if location:
             payload['location'] = location
-        elif password:
+        if password:
             payload['password'] = password
         return self.patch(self.SELF, json=payload)
+
+    def edit_playlist(self, playlist_id, *, name=None, public=False):
+        payload = {}
+        if name:
+            payload['name'] = name
+        if public:
+            payload['public'] = public
+        return self.patch('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=payload)
+
+    def add_playlist_track(self, playlist_id, track_id, release_id):
+        playlist = self.get_playlist(playlist_id)
+        playlist['tracks'].append({'trackId': track_id, 'releaseId': release_id})
+        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
+
+    def add_playlist_tracks(self, playlist_id, entries):
+        playlist = self.get_playlist(playlist_id)
+        for entry in entries:
+            playlist['tracks'].append(entry)
+        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
 
     def add_reddit_username(self, username):
         payload = {
@@ -154,8 +185,14 @@ class HTTPClient:
         }
         self.post('{0.SELF}/update-reddit'.format(self), json=payload)
 
-    def get_discord_gold_invite(self):
-        return self.get('{0.SELF}/discord/gold'.format(self))
+    def delete_playlist(self, playlist_id):
+        return self.delete('{0.PLAYLIST}/{1}'.format(self, playlist_id))
+
+    def delete_playlist_track(self, playlist_id, track_id):
+        playlist = self.get_playlist(playlist_id)
+        track = [item for item in playlist['tracks'] if item['trackId'] == track_id][0]
+        del playlist['tracks'][playlist['tracks'].index(track)]
+        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
 
     def download_release(self, album_id, path, audio_format):
         url = utils.DownloadLink().release(album_id, audio_format)
@@ -181,6 +218,9 @@ class HTTPClient:
                     file.write(chunk)
         return True
 
+    def get_discord_invite(self):
+        return self.get('{0.SELF}/discord/gold'.format(self))
+
     def get_release(self, catalog_id):
         return self.get('{0.RELEASE}/{1}'.format(self, catalog_id))
 
@@ -202,14 +242,26 @@ class HTTPClient:
     def get_playlist_tracklist(self, playlist_id):
         return self.get('{0.PLAYLIST}/{1}/tracks'.format(self, playlist_id))
 
-    def get_track_list(self):
+    def get_all_tracks(self):
         return self.get(self.TRACK)
 
-    def get_release_list(self):
-        return self.get(self.RELEASE)
+    def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False):
+        query = []
+        if singles:
+            query.append('type,Single')
+        if eps:
+            query.append('type,EP')
+        if albums:
+            query.append('type,Album')
+        if podcasts:
+            query.append('type,Podcast')
+        if not singles or not eps or not albums or not podcasts:
+            return self.get('{0.RELEASE}?fuzzyOr=type,None'.format(self))
+        else:
+            return self.get('{0.RELEASE}?fuzzyOr={1}'.format(self, ','.join(query)))
 
-    def get_artist_list(self):
+    def get_all_artists(self):
         return self.get(self.ARTIST)
 
-    def get_playlist_list(self):
+    def get_all_playlists(self):
         return self.get(self.PLAYLIST)
