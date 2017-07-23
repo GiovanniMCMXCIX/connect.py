@@ -33,11 +33,11 @@ class Playlist:
 
         Attributes
         ----------
-        id : str
+        id: str
             The playlist ID.
-        name : str
+        name: str
             The playlist name.
-        owner_id : str
+        owner_id: str
             The owner id."""
 
     __slots__ = ['id', 'name', 'owner_id', '_tracks']
@@ -60,7 +60,7 @@ class Playlist:
         return self.name
 
     @property
-    def tracks(self):
+    def tracks(self) -> list:
         """Returns a list of connect.playlist.PlaylistEntry items."""
         if self._tracks:
             return list(self._tracks.values())
@@ -79,22 +79,22 @@ class PlaylistEntry:
 
     Attributes
     ----------
-    id : str
+    id: str
         The track ID.
-    artists : str
+    artists: str
         The track artists.
-    title : str
+    title: str
         The track title.
-    duration : int
+    duration: int
         The track duration.
-    bpm : int
+    bpm: int
         The track BPM.
-    genre : str
+    genre: str
         The track genre.
-    genres : List[str]
+    genres: List[str]
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`
-    release : :class:`release.ReleaseEntry`
-    tags : List[str]
+    release: :class:`release.ReleaseEntry`
+    tags: List[str]
         The track tags.
     """
 
@@ -133,11 +133,11 @@ class PlaylistEntry:
         return '{0.artists} - {0.title}'.format(self)
 
     @property
-    def albums(self):
+    def albums(self) -> list:
         """List[:class:`release.Album`]: A list of Albums that this track is a part of."""
         return list(self._albums.values())
 
-    def get_artists(self):
+    def get_artists(self) -> list:
         """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""
         return list(self._artists.values())
 

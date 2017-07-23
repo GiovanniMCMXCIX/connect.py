@@ -34,27 +34,27 @@ class Release:
     
     Attributes
     ----------
-    id : str
+    id: str
         The release ID.
-    catalog_id : str
+    catalog_id: str
         The Catalog ID of the release. Could be None.
-    artists : str
+    artists: str
         The release artists.
-    title : str
+    title: str
         The release title.
-    release_date : datetime.datetime
+    release_date: datetime.datetime
         A naive UTC datetime object containing the time the release was launched.
-    type : str
+    type: str
         Release type.
-    urls : List[str]
+    urls: List[str]
         A list of urls for supporting or listening to the release.
-    downloadable : bool
+    downloadable: bool
         Indicates if the release can be downloaded.
-    streamable : bool
+    streamable: bool
         Indicates if the release can be streamed.
-    early_access : bool
+    early_access: bool
         Indicates if the release is in early access for gold users.
-    free_download : bool
+    free_download: bool
         Indicates if the track can be downloaded for free.
     """
 
@@ -75,7 +75,7 @@ class Release:
         self.downloadable = kwargs.pop('downloadable', None)
         self.streamable = kwargs.pop('streamable', None)
         self.early_access = kwargs.pop('inEarlyAccess', None)
-        self.free_download = kwargs.pop('freeDownloadForUsers')
+        self.free_download = kwargs.pop('freeDownloadForUsers', None)
         self._tracks = {}
 
     def __eq__(self, other):
@@ -87,7 +87,7 @@ class Release:
     def __str__(self):
         return '{0.artists} - {0.title}'.format(self)
 
-    def thumbnails(self, resolution: int):
+    def thumbnails(self, resolution: int) -> str:
         """Returns a hash to a bound resolution."""
         return '{}?image_width={}'.format(self.cover_url, resolution)
 
@@ -95,7 +95,7 @@ class Release:
         self._tracks[track.id] = track
 
     @property
-    def tracks(self):
+    def tracks(self) -> list:
         """Returns a list of connect.Tracks items."""
         if self._tracks:
             return list(self._tracks.values())
@@ -111,13 +111,13 @@ class ReleaseEntry:
 
     Attributes
     ----------
-    id : str
+    id: str
         The release ID.
-    catalog_id : str
+    catalog_id: str
         The Catalog ID of the release. Could be None.
-    title : str
+    title: str
         The release title.
-    release_date : datetime.datetime
+    release_date: datetime.datetime
         A naive UTC datetime object containing the time the release was launched.
     """
 
@@ -146,11 +146,11 @@ class Album:
 
     Attributes
     ----------
-    id : str
+    id: str
         The release ID.
-    track_number : int
+    track_number: int
         Placement in a release.
-    stream_id : str
+    stream_id: str
         The stream hash of the release.
     """
 
@@ -171,7 +171,7 @@ class Album:
         return True
 
     @property
-    def stream_url(self):
+    def stream_url(self) -> [str, None]:
         """Returns a friendly URL version of the stream_id variable the release has."""
         if not self.stream_id:
             return None

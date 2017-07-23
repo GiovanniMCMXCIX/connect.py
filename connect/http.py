@@ -262,6 +262,16 @@ class HTTPClient:
     def get_playlist_tracklist(self, playlist_id):
         return self.get('{0.PLAYLIST}/{1}/tracks'.format(self, playlist_id))
 
+    def get_browse_entries(self, *, types=None, genres=None, tags=None, limit=None, skip=None):
+        query = []
+        if types:
+            query.append('&types={}'.format(','.join(types)))
+        if genres:
+            query.append('&genres={}'.format(','.join(genres)))
+        if tags:
+            query.append('&tags={}'.format(','.join(tags)))
+        return self.get('{0.BROWSE}?limit={1}&skip={2}{3}'.format(self, limit, skip, ''.join(query)))
+
     def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=None, skip=None):
         query = []
         if singles:

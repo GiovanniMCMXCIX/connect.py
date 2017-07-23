@@ -30,6 +30,8 @@ from .release import Release
 from .track import Track
 from .artist import Artist
 from .playlist import Playlist
+from .browse import BrowseEntry
+from typing import List
 from urllib.parse import quote
 
 
@@ -41,7 +43,7 @@ class Client:
         """Logs in the client with the specified credentials.
 
         Parameters
-        -----------
+        ----------
         email: str
 
         password: str
@@ -50,7 +52,7 @@ class Client:
 
 
         Raises
-        -------
+        ------
         HTTPSException
             Invalid email, password or token.
         """
@@ -72,7 +74,7 @@ class Client:
         """Edits the current profile of the client.
 
         Parameters
-        -----------
+        ----------
         name: str
 
         real_name: str
@@ -83,7 +85,7 @@ class Client:
 
 
         Raises
-        -------
+        ------
         Forbidden
             The client isn't signed in order to edit the profile.
         """
@@ -93,83 +95,83 @@ class Client:
         """Adds the reddit username to the current profile of the client.
 
         Parameters
-        -----------
+        ----------
         username: str
 
 
         Raises
-        -------
+        ------
         NotFound
             "I need to buy monstercat gold again in order to finish this library" ~ GiovanniMCMXCIX
         """
         self.http.add_reddit_username(username)
 
-    def get_discord_invite(self):
+    def get_discord_invite(self) -> str:
         """Gets an invite for the gold discord channel on the monstercat discord guild.
         The client needs gold subscription in order to get the invite for that channel.
 
         Raises
-        -------
+        ------
         NotFound
             "I need to buy monstercat gold again in order to finish this library" ~ GiovanniMCMXCIX
         """
         return self.http.get_discord_invite()
 
-    def get_release(self, catalog_id: str):
+    def get_release(self, catalog_id: str) -> Release:
         """Returns a release with the given ID.
 
         Parameters
-        -----------
+        ----------
         catalog_id: str
 
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't get the release.
         """
         return Release(**self.http.get_release(catalog_id))
 
-    def get_track(self, track_id: str):
+    def get_track(self, track_id: str) -> Track:
         """Returns a track with the given ID.
 
         Parameters
-        -----------
+        ----------
         track_id: str
 
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't get the track.
         """
         return Track(**self.http.get_track(track_id))
 
-    def get_artist(self, artist_id: str):
+    def get_artist(self, artist_id: str) -> Artist:
         """Returns a artist with the given ID.
 
         Parameters
-        -----------
+        ----------
         artist_id: str
 
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't get the artist.
         """
         return Artist(**self.http.get_artist(artist_id))
 
-    def get_playlist(self, playlist_id: str):
+    def get_playlist(self, playlist_id: str) -> Playlist:
         """Returns a playlist with the given ID.
 
         Parameters
-        -----------
+        ----------
         playlist_id: str
 
 
         Raises
-        -------
+        ------
         Forbidden
             The client can't access a private playlist.
         NotFound
@@ -177,11 +179,11 @@ class Client:
         """
         return Playlist(**self.http.get_playlist(playlist_id))
 
-    def get_all_releases(self, *, singles: bool = True, eps: bool = True, albums: bool = True, podcasts: bool = False, limit: int = None, skip: int = None):
+    def get_all_releases(self, *, singles: bool = True, eps: bool = True, albums: bool = True, podcasts: bool = False, limit: int = None, skip: int = None) -> List[Release]:
         """Retrieves every release the client can access.
 
         Parameters
-        -----------
+        ----------
         singles: bool
 
         eps: bool
@@ -200,11 +202,11 @@ class Client:
             releases.append(Release(**release))
         return releases
 
-    def get_all_tracks(self, *, limit: int = None, skip: int = None):
+    def get_all_tracks(self, *, limit: int = None, skip: int = None) -> List[Track]:
         """Retrieves every track the client can access.
 
         Parameters
-        -----------
+        ----------
         limit: int
            The limit for how many tracks are supposed to be shown.
         skip: int
@@ -215,11 +217,11 @@ class Client:
             tracks.append(Track(**track))
         return tracks
 
-    def get_all_artists(self, *, year: int = None, limit: int = None, skip: int = None):
+    def get_all_artists(self, *, year: int = None, limit: int = None, skip: int = None) -> List[Artist]:
         """Retrieves every artist the client can access.
 
         Parameters
-        -----------
+        ----------
         year: int
            The artists from the year specified that are to be shown.
         limit: int
@@ -232,11 +234,11 @@ class Client:
             artists.append(Artist(**artist))
         return artists
 
-    def get_all_playlists(self, *, limit: int = None, skip: int = None):
+    def get_all_playlists(self, *, limit: int = None, skip: int = None) -> List[Playlist]:
         """Retrieves every playlist the client can access.
 
         Raises
-        -------
+        ------
         Unauthorized
             The client isn't signed in.
         """
@@ -245,11 +247,41 @@ class Client:
             playlists.append(Playlist(**playlist))
         return playlists
 
-    def search_release(self, term: str, *, limit: int = None, skip: int = None):
+    def get_browse_entries(self, *, types: List[str] = None, genres: List[str] = None, tags: List[str] = None, limit: int = None, skip: int = None) -> List[BrowseEntry]:
+        # I can't think of a better way to name this function...
         """Searches for a release.
 
         Parameters
-        -----------
+        ----------
+        types: List[str]
+
+        genres: List[str]
+
+        tags: List[str]
+
+        limit: int
+            The limit for how many releases are supposed to be shown.
+        skip: int
+            Number of releases that are skipped to be shown.
+
+        Raises
+        ------
+        NotFound
+            The client couldn't find any releases.
+        """
+        entries = []
+        for entry in self.http.get_browse_entries(types=types, genres=genres, tags=tags, limit=limit, skip=skip)['results']:
+            entries.append(BrowseEntry(**entry))
+        if not entries:
+            raise NotFound('No browse entry was found.')
+        else:
+            return entries
+
+    def search_release(self, term: str, *, limit: int = None, skip: int = None) -> List[Release]:
+        """Searches for a release.
+
+        Parameters
+        ----------
         term: str
            The release name that is searched.
         limit: int
@@ -258,7 +290,7 @@ class Client:
            Number of releases that are skipped to be shown.
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't find any releases.
         """
@@ -271,11 +303,11 @@ class Client:
         else:
             return releases
 
-    def search_release_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None):
+    def search_release_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None) -> List[Release]:
         """Searches for a release in a more advanced way.
 
         Parameters
-        -----------
+        ----------
         title: str
            The release title that is searched.
         artists: str
@@ -286,7 +318,7 @@ class Client:
            Number of releases that are skipped to be shown.
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't find any releases.
         """
@@ -299,11 +331,11 @@ class Client:
         else:
             return releases
 
-    def search_track(self, term: str, *, limit: int = None, skip: int = None):
+    def search_track(self, term: str, *, limit: int = None, skip: int = None) -> List[Track]:
         """Searches for a track.
 
         Parameters
-        -----------
+        ----------
         term: str
            The track name that is searched.
         limit: int
@@ -312,7 +344,7 @@ class Client:
            Number of tracks that are skipped to be shown.
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't find any tracks.
         """
@@ -325,11 +357,11 @@ class Client:
         else:
             return tracks
 
-    def search_track_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None):
+    def search_track_advanced(self, title: str, artists: str, *, limit: int = None, skip: int = None) -> List[Track]:
         """Searches for a track in a more advanced way.
 
         Parameters
-        -----------
+        ----------
         title: str
            The track title that is searched.
         artists: str
@@ -340,7 +372,7 @@ class Client:
            Number of tracks that are skipped to be shown.
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't find any tracks.
         """
@@ -353,11 +385,11 @@ class Client:
         else:
             return tracks
 
-    def search_artist(self, term: str, *, year: int = None, limit: int = None, skip: int = None):
+    def search_artist(self, term: str, *, year: int = None, limit: int = None, skip: int = None) -> List[Artist]:
         """Searches for a artist.
 
         Parameters
-        -----------
+        ----------
         term: str
            The artist name that is searched.
         year: int
@@ -368,7 +400,7 @@ class Client:
            Number of artists that are skipped to be shown.
 
         Raises
-        -------
+        ------
         NotFound
             The client couldn't find any artists.
         """
@@ -383,11 +415,11 @@ class Client:
         else:
             return artists
 
-    def search_playlist(self, term: str, *, limit: int = None, skip: int = None):
+    def search_playlist(self, term: str, *, limit: int = None, skip: int = None) -> List[Playlist]:
         """Searches for a playlist.
 
         Parameters
-        -----------
+        ----------
         term: str
            The playlist name that is searched.
         limit: int
@@ -396,7 +428,7 @@ class Client:
            Number of playlists that are skipped to be shown.
 
         Raises
-        -------
+        ------
         Unauthorized
             The client isn't signed in.
         NotFound

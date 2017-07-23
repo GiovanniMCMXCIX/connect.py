@@ -30,29 +30,29 @@ class Track:
 
     Attributes
     ----------
-    id : str
+    id: str
         The track ID.
-    artists : str
+    artists: str
         The track artists.
-    title : str
+    title: str
         The track title.
-    duration : int
+    duration: int
         The track duration.
-    bpm : int
+    bpm: int
         The track BPM.
-    genre : str
+    genre: str
         The track genre.
-    genres : List[str]
+    genres: List[str]
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`.
-    tags : List[str]
+    tags: List[str]
         The track tags.
-    downloadable : bool
+    downloadable: bool
         Indicates if the track can be downloaded.
-    streamable : bool
+    streamable: bool
         Indicates if the track can be streamed.
-    early_access : bool
+    early_access: bool
         Indicates if the track is in early access for gold users.
-    free_download : bool
+    free_download: bool
         Indicates if the track can be downloaded for free.
     """
 

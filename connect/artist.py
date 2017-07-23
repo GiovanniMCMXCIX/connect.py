@@ -33,19 +33,19 @@ class Artist:
 
     Attributes
     ----------
-    id : str
+    id: str
         The artist ID.
-    name : str
+    name: str
         The artist name.
-    vanity_uri : str
+    vanity_uri: str
         The artist vanity uri.
-    profile_image_id : str
+    profile_image_id: str
         The profile image hash the artist has. Could be None. Soon to be obsolete.
-    profile_image_url : str
+    profile_image_url: str
         Returns the profile image URL that the artist has.
-    urls : List[str]
+    urls: List[str]
         The artist social media urls.
-    years : List[int]
+    years: List[int]
         The artist release years.
     """
 
@@ -80,7 +80,7 @@ class Artist:
         self._releases[release.id] = release
 
     @property
-    def releases(self):
+    def releases(self) -> list:
         """List[:class:`Release`]: A list of the artist's releases or appearances."""
         if self._releases:
             return list(self._releases.values())
@@ -96,9 +96,9 @@ class ArtistEntry:
 
     Attributes
     ----------
-    id : str
+    id: str
         The artist ID.
-    name : str
+    name: str
         The artist name.
     """
 

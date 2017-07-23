@@ -88,17 +88,17 @@ class BrowseEntry:
         self._from_data()
 
     def __eq__(self, other):
-        return self.id == other.id and isinstance(other, self.__class__)
+        return self.id == other.id and isinstance(other, self.__class__) and self.release.id == other.release.id
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
-            return self.id != other.id
+            return self.id != other.id and self.release.id != other.release.id
         return True
 
     def __str__(self):
         return '{0.artists} - {0.title}'.format(self)
 
-    def get_artists(self):
+    def get_artists(self) -> list:
         """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""
         return list(self._artists.values())
 

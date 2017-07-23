@@ -37,7 +37,7 @@ class TestGetAllCatalog(unittest.TestCase):
         releases = []
         for release in client.get_all_releases():
             releases.append((str(release), len(release.tracks)))
-        print('There are {} total releases. (Normal Releases + Podcasts)'.format(len(releases)))
+        print('There are {} total releases.'.format(len(releases)))
 
     @connect.utils.ignore_warnings
     def test_track(self):
