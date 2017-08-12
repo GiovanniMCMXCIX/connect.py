@@ -85,11 +85,11 @@ class Release:
         return self.id != other.id
 
     def __str__(self):
-        return '{0.artists} - {0.title}'.format(self)
+        return f'{self.artists} - {self.title}'
 
     def thumbnails(self, resolution: int) -> str:
         """Returns a hash to a bound resolution."""
-        return '{}?image_width={}'.format(self.cover_url, resolution)
+        return f'{self.cover_url}?image_width={resolution}'
 
     def _add_track(self, track):
         self._tracks[track.id] = track
@@ -176,4 +176,4 @@ class Album:
         if not self.stream_id:
             return None
         else:
-            return 'https://s3.amazonaws.com/data.monstercat.com/blobs/{0.stream_id}'.format(self)
+            return f'https://s3.amazonaws.com/data.monstercat.com/blobs/{self.stream_id}'

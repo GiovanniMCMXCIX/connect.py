@@ -295,8 +295,7 @@ class Client:
             The client couldn't find any releases.
         """
         releases = []
-        query = '?fuzzyOr=title,{1},renderedArtists,{1}&limit={2}&skip{3}'.format(self, quote(term), limit, skip)
-        for release in self.http.get(self.http.RELEASE + query)['results']:
+        for release in self.http.get(f'{self.http.RELEASE}?fuzzyOr=title,{quote(term)},renderedArtists,{quote(term)}&limit={limit}&skip={skip}')['results']:
             releases.append(Release(**release))
         if not releases:
             raise NotFound('No release was found.')
@@ -323,8 +322,7 @@ class Client:
             The client couldn't find any releases.
         """
         releases = []
-        query = '?fuzzy=title,{1},renderedArtists,{2}&limit={3}&skip{4}'.format(self, quote(title), quote(artists), limit, skip)
-        for release in self.http.get(self.http.RELEASE + query)['results']:
+        for release in self.http.get(f'{self.http.RELEASE}?fuzzy=title,{quote(title)},renderedArtists,{quote(artists)}&limit={limit}&skip={skip}')['results']:
             releases.append(Release(**release))
         if not releases:
             raise NotFound('No release was found.')
@@ -349,8 +347,7 @@ class Client:
             The client couldn't find any tracks.
         """
         tracks = []
-        query = '?fuzzyOr=title,{1},artistsTitle,{1}&limit={2}&skip{3}'.format(self, quote(term), limit, skip)
-        for track in self.http.get(self.http.TRACK + query)['results']:
+        for track in self.http.get(f'{self.http.TRACK}?fuzzyOr=title,{quote(term)},artistsTitle,{quote(term)}&limit={limit}&skip={skip}')['results']:
             tracks.append(Track(**track))
         if not tracks:
             raise NotFound('No track was found.')
@@ -377,8 +374,7 @@ class Client:
             The client couldn't find any tracks.
         """
         tracks = []
-        query = '?fuzzy=title,{1},artistsTitle,{2}&limit={3}&skip{4}'.format(self, quote(title), quote(artists), limit, skip)
-        for track in self.http.get(self.http.TRACK + query)['results']:
+        for track in self.http.get(f'{self.http.TRACK}?fuzzy=title,{quote(title)},artistsTitle,{quote(artists)}&limit={limit}&skip={skip}')['results']:
             tracks.append(Track(**track))
         if not tracks:
             raise NotFound('No track was found.')
@@ -405,10 +401,10 @@ class Client:
             The client couldn't find any artists.
         """
         artists = []
-        query = '?limit={1}&skip{2}&fuzzyOr=name,{0}'.format(quote(term), limit, skip)
+        base = f'{self.http.ARTIST}?limit={limit}&skip={skip}&fuzzyOr=name,{quote(term)}'
         if year:
-            query.__add__(',year,{}'.format(year))
-        for artist in self.http.get(self.http.ARTIST + query)['results']:
+            base.__add__(f',year,{year}')
+        for artist in self.http.get(base)['results']:
             artists.append(Artist(**artist))
         if not artists:
             raise NotFound('No artist was found.')
@@ -435,8 +431,7 @@ class Client:
             The client couldn't find any playlists.
         """
         playlists = []
-        query = '?fuzzyOr=name,{1}&limit={2}&skip{3}'.format(self, quote(term), limit, skip)
-        for playlist in self.http.get(self.http.PLAYLIST + query)['results']:
+        for playlist in self.http.get(f'{self.http.PLAYLIST}?fuzzyOr=name,{quote(term)}&limit={limit}&skip={skip}')['results']:
             playlists.append(Playlist(**playlist))
         if not playlists:
             raise NotFound('No playlist was found.')

@@ -96,7 +96,7 @@ class BrowseEntry:
         return True
 
     def __str__(self):
-        return '{0.artists} - {0.title}'.format(self)
+        return f'{self.artists} - {self.title}'
 
     def get_artists(self) -> list:
         """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""

@@ -37,7 +37,7 @@ class TestGetAllCatalog(unittest.TestCase):
         releases = []
         for release in client.get_all_releases():
             releases.append((str(release), len(release.tracks)))
-        print('There are {} total releases.'.format(len(releases)))
+        print(f'There are {len(releases)} total releases.')
 
     @connect.utils.ignore_warnings
     def test_track(self):
@@ -45,7 +45,7 @@ class TestGetAllCatalog(unittest.TestCase):
         tracks = []
         for track in client.get_all_tracks():
             tracks.append((str(track), len(track.albums)))
-        print('There are {} total tracks.'.format(len(tracks)))
+        print(f'There are {len(tracks)} total tracks.')
 
     @connect.utils.ignore_warnings
     def test_artist(self):
@@ -53,4 +53,4 @@ class TestGetAllCatalog(unittest.TestCase):
         artists = []
         for artist in client.get_all_artists():
             artists.append((str(artist), len(artist.releases)))
-        print('There are {} total artists.'.format(len(artists)))
+        print(f'There are {len(artists)} total artists.')

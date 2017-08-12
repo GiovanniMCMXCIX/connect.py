@@ -37,25 +37,23 @@ class DownloadLinkGenerator:
     API_BASE = BASE + '/api'
     RELEASE = API_BASE + '/release'
     PLAYLIST = API_BASE + '/playlist'
+    FORMATS = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
 
     def release(self, release_id, audio_format):
-        formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
-        if audio_format in formats:
-            return '{0.RELEASE}/{1}/download?method=download&type={2}'.format(self, release_id, audio_format)
+        if audio_format in self.FORMATS:
+            return f'{self.RELEASE}/{release_id}/download?method=download&type={audio_format}'
         else:
             raise InvalidArgument('The audio format inserted is invalid')
 
     def track(self, release_id, track_id, audio_format):
-        formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
-        if audio_format in formats:
-            return '{0.RELEASE}/{1}/download?method=download&type={2}&track={3}'.format(self, release_id, audio_format, track_id)
+        if audio_format in self.FORMATS:
+            return f'{self.RELEASE}/{release_id}/download?method=download&type={audio_format}&track={track_id}'
         else:
             raise InvalidArgument('The audio format inserted is invalid')
 
     def playlist(self, playlist_id, audio_format, page=1):
-        formats = ['mp3_320', 'mp3_128', 'mp3_v0', 'mp3_v2', 'wav', 'flac']
-        if audio_format in formats:
-            return '{0.PLAYLIST}/{1}/download?method=download&type={2}&page={3}'.format(self, playlist_id, audio_format, page)
+        if audio_format in self.FORMATS:
+            return f'{self.PLAYLIST}/{playlist_id}/download?method=download&type={audio_format}&page={page}'
         else:
             raise InvalidArgument('The audio format inserted is invalid')
 

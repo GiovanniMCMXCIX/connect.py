@@ -135,10 +135,10 @@ class HTTPClient:
             'token': token
         }
         self.email_sign_in(email, password)
-        self.post('{0.SIGN_IN}/token'.format(self), json=payload)
+        self.post(f'{self.SIGN_IN}/token', json=payload)
 
     def is_singed_in(self):
-        response = self.get('{0.SELF}/session'.format(self))
+        response = self.get(f'{self.SELF}/session')
         if not response.get('user'):
             return False
         if response.get('user').get('subscriber', False) is True:
@@ -157,7 +157,7 @@ class HTTPClient:
         }
         if entries:
             payload['tracks'] = entries
-        return self.post('{0.PLAYLIST}'.format(self), json=payload)
+        return self.post(f'{self.PLAYLIST}', json=payload)
 
     def edit_profile(self, *, name=None, real_name=None, location=None, password=None):
         payload = {}
@@ -177,33 +177,33 @@ class HTTPClient:
             payload['name'] = name
         if public:
             payload['public'] = public
-        return self.patch('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=payload)
+        return self.patch(f'{self.PLAYLIST}/{playlist_id}', json=payload)
 
     def add_playlist_track(self, playlist_id, track_id, release_id):
         playlist = self.get_playlist(playlist_id)
         playlist['tracks'].append({'trackId': track_id, 'releaseId': release_id})
-        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
+        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
     def add_playlist_tracks(self, playlist_id, entries):
         playlist = self.get_playlist(playlist_id)
         for entry in entries:
             playlist['tracks'].append(entry)
-        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
+        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
     def add_reddit_username(self, username):
         payload = {
             'redditUsername': username
         }
-        self.post('{0.SELF}/update-reddit'.format(self), json=payload)
+        self.post(f'{self.SELF}/update-reddit', json=payload)
 
     def delete_playlist(self, playlist_id):
-        return self.delete('{0.PLAYLIST}/{1}'.format(self, playlist_id))
+        return self.delete(f'{self.PLAYLIST}/{playlist_id}')
 
     def delete_playlist_track(self, playlist_id, track_id):
         playlist = self.get_playlist(playlist_id)
         track = [item for item in playlist['tracks'] if item['trackId'] == track_id][0]
         del playlist['tracks'][playlist['tracks'].index(track)]
-        return self.put('{0.PLAYLIST}/{1}'.format(self, playlist_id), json=playlist)
+        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
     def download_release(self, album_id, path, audio_format):
         r = self.get(self.download_link_gen.release(album_id, audio_format), stream=True)
@@ -239,38 +239,38 @@ class HTTPClient:
         return True
 
     def get_discord_invite(self):
-        return self.get('{0.SELF}/discord/gold'.format(self))
+        return self.get(f'{self.SELF}/discord/gold')
 
     def get_release(self, catalog_id):
-        return self.get('{0.RELEASE}/{1}'.format(self, catalog_id))
+        return self.get(f'{self.RELEASE}/{catalog_id}')
 
     def get_release_tracklist(self, release_id):
-        return self.get('{0.RELEASE}/{1}/tracks'.format(self, release_id))
+        return self.get(f'{self.RELEASE}/{release_id}/tracks')
 
     def get_track(self, track_id):
-        return self.get('{0.TRACK}/{1}'.format(self, track_id))
+        return self.get(f'{self.TRACK}/{track_id}')
 
     def get_artist(self, artist_id):
-        return self.get('{0.ARTIST}/{1}'.format(self, artist_id))
+        return self.get(f'{self.ARTIST}/{artist_id}')
 
     def get_artist_releases(self, artist_id):
-        return self.get('{0.ARTIST}/{1}/releases'.format(self, artist_id))
+        return self.get(f'{self.ARTIST}/{artist_id}/releases')
 
     def get_playlist(self, playlist_id):
-        return self.get('{0.PLAYLIST}/{1}'.format(self, playlist_id))
+        return self.get(f'{self.PLAYLIST}/{playlist_id}')
 
     def get_playlist_tracklist(self, playlist_id):
-        return self.get('{0.PLAYLIST}/{1}/tracks'.format(self, playlist_id))
+        return self.get(f'{self.PLAYLIST}/{playlist_id}/tracks')
 
     def get_browse_entries(self, *, types=None, genres=None, tags=None, limit=None, skip=None):
         query = []
         if types:
-            query.append('&types={}'.format(','.join(types)))
+            query.append(f'&types={",".join(types)}')
         if genres:
-            query.append('&genres={}'.format(','.join(genres)))
+            query.append(f'&genres={",".join(genres)}')
         if tags:
-            query.append('&tags={}'.format(','.join(tags)))
-        return self.get('{0.BROWSE}?limit={1}&skip={2}{3}'.format(self, limit, skip, ''.join(query)))
+            query.append(f'&tags={",".join(tags)}')
+        return self.get(f'{self.BROWSE}?limit={limit}&skip={skip}{"".join(query)}')
 
     def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=None, skip=None):
         query = []
@@ -283,18 +283,18 @@ class HTTPClient:
         if podcasts:
             query.append('type,Podcast')
         if not singles and not eps and not albums and not podcasts:
-            return self.get('{0.RELEASE}?fuzzyOr=type,None'.format(self))
+            return self.get(f'{self.RELEASE}?fuzzyOr=type,None')
         else:
-            return self.get('{0.RELEASE}?fuzzyOr={1}&limit={2}&skip={3}'.format(self, ','.join(query), limit, skip))
+            return self.get(f'{self.RELEASE}?fuzzyOr={",".join(query)}&limit={limit}&skip={skip}')
 
     def get_all_tracks(self, limit=None, skip=None):
-        return self.get('{0.TRACK}?limit={1}&skip{2}'.format(self, limit, skip))
+        return self.get(f'{self.TRACK}?limit={limit}&skip{skip}')
 
     def get_all_artists(self, year=None, limit=None, skip=None):
-        base = '{0.ARTIST}?limit={1}&skip={2}'.format(self, limit, skip)
+        base = f'{self.ARTIST}?limit={limit}&skip={skip}'
         if year:
-            base.__add__('&fuzzy=year,{}'.format(year))
+            base.__add__(f'&fuzzy=year,{year}')
         return self.get(base)
 
     def get_all_playlists(self, *, limit=None, skip=None):
-        return self.get('{0.PLAYLIST}?limit={1}&skip={2}'.format(self, limit, skip))
+        return self.get(f'{self.PLAYLIST}?limit={limit}&skip={skip}')
