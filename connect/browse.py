@@ -32,38 +32,38 @@ class BrowseEntry:
 
     Attributes
     ----------
-    id : str
+    id: str
         The track ID.
-    artists : str
+    artists: str
         The track artists.
-    title : str
+    title: str
         The track title.
-    duration : int
+    duration: int
         The track duration.
-    bpm : int
+    bpm: int
         The track BPM.
-    genre : str
+    genre: str
         The track genre.
-    genres : List[str]
+    genres: List[str]
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`.
     release: :class:`Release`
 
     albums: :class:`release.Album`
 
-    tags : List[str]
+    tags: List[str]
         The track tags.
-    downloadable : bool
+    is_downloadable: bool
         Indicates if the track can be downloaded.
-    streamable : bool
+    is_streamable: bool
         Indicates if the track can be streamed.
-    early_access : bool
+    is_in_early_access: bool
         Indicates if the track is in early access for gold users.
-    free_download : bool
+    is_free: bool
         Indicates if the track can be downloaded for free.
     """
     __slots__ = [
         'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'release', 'albums',
-        'tags', 'downloadable', 'streamable', 'early_access', 'free_download', '_artists_raw', '_artists'
+        'tags', 'is_downloadable', 'is_streamable', 'is_in_early_access', 'is_free', '_artists_raw', '_artists'
     ]
 
     def __init__(self, **kwargs):
@@ -79,10 +79,10 @@ class BrowseEntry:
         self.release = Release(**kwargs.pop('release'))
         self.albums = Album(**kwargs.pop('albums'))
         self.tags = kwargs.pop('tags')
-        self.downloadable = kwargs.pop('downloadable')
-        self.streamable = kwargs.pop('streamable')
-        self.early_access = kwargs.pop('inEarlyAccess')
-        self.free_download = kwargs.pop('freeDownloadForUsers')
+        self.is_downloadable = kwargs.pop('downloadable')
+        self.is_streamable = kwargs.pop('streamable')
+        self.is_in_early_access = kwargs.pop('inEarlyAccess')
+        self.is_free = kwargs.pop('freeDownloadForUsers')
         self._artists_raw = kwargs.pop('artists')
         self._artists = {}
         self._from_data()

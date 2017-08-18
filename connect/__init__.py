@@ -13,7 +13,7 @@ __title__ = 'connect'
 __author__ = 'GiovanniMCMXCIX'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2016-2017 GiovanniMCMXCIX'
-__version__ = '0.4.0a2'
+__version__ = '0.4.0a3'
 
 from .errors import *
 from .client import Client

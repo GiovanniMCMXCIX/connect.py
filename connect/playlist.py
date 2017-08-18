@@ -38,14 +38,21 @@ class Playlist:
         name: str
             The playlist name.
         owner_id: str
-            The owner id."""
+            The owner id.
+        is_public: bool
+            If the playlist is public.
+        is_deleted: bool
+            If the playlist is deleted.
+        """
 
-    __slots__ = ['id', 'name', 'owner_id', '_tracks']
+    __slots__ = ['id', 'name', 'owner_id', 'is_public', 'is_deleted', '_tracks']
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
         self.name = kwargs.pop('name')
         self.owner_id = kwargs.pop('userId')
+        self.is_public = kwargs.pop('public')
+        self.is_deleted = kwargs.pop('deleted')
         self._tracks = {}
 
     def __eq__(self, other):
@@ -94,6 +101,7 @@ class PlaylistEntry:
     genres: List[str]
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`
     release: :class:`release.ReleaseEntry`
+        Release that the playlist entry is a part of.
     tags: List[str]
         The track tags.
     """

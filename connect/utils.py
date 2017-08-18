@@ -28,7 +28,6 @@ import re
 import json
 import datetime
 import warnings
-from .errors import InvalidArgument
 
 
 class DownloadLinkGenerator:
@@ -43,19 +42,19 @@ class DownloadLinkGenerator:
         if audio_format in self.FORMATS:
             return f'{self.RELEASE}/{release_id}/download?method=download&type={audio_format}'
         else:
-            raise InvalidArgument('The audio format inserted is invalid')
+            raise ValueError('The audio format inserted is invalid')
 
     def track(self, release_id, track_id, audio_format):
         if audio_format in self.FORMATS:
             return f'{self.RELEASE}/{release_id}/download?method=download&type={audio_format}&track={track_id}'
         else:
-            raise InvalidArgument('The audio format inserted is invalid')
+            raise ValueError('The audio format inserted is invalid')
 
     def playlist(self, playlist_id, audio_format, page=1):
         if audio_format in self.FORMATS:
             return f'{self.PLAYLIST}/{playlist_id}/download?method=download&type={audio_format}&page={page}'
         else:
-            raise InvalidArgument('The audio format inserted is invalid')
+            raise ValueError('The audio format inserted is invalid')
 
 
 def to_json(obj):
@@ -65,6 +64,13 @@ def to_json(obj):
 def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('Z', ''))))
+    return None
+
+
+def find(predicate, items):
+    for item in items:
+        if predicate(item):
+            return item
     return None
 
 

@@ -45,6 +45,7 @@ class HTTPClient:
     RELEASE = CATALOG + '/release'
     ARTIST = CATALOG + '/artist'
     BROWSE = CATALOG + '/browse'
+    BROWSE_FILTERS = BROWSE + '/filters'
 
     def __init__(self):
         self.session = requests.Session()
@@ -147,9 +148,6 @@ class HTTPClient:
     def sign_out(self):
         self.post(self.SIGN_OUT)
 
-    def self(self):
-        return self.get(self.SELF)
-
     def create_playlist(self, name, *, public=False, entries=None):
         payload = {
             'name': name,
@@ -197,7 +195,7 @@ class HTTPClient:
         self.post(f'{self.SELF}/update-reddit', json=payload)
 
     def delete_playlist(self, playlist_id):
-        return self.delete(f'{self.PLAYLIST}/{playlist_id}')
+        self.delete(f'{self.PLAYLIST}/{playlist_id}')
 
     def delete_playlist_track(self, playlist_id, track_id):
         playlist = self.get_playlist(playlist_id)
@@ -237,6 +235,9 @@ class HTTPClient:
                 if chunk:
                     file.write(chunk)
         return True
+
+    def get_self(self):
+        return self.get(self.SELF)
 
     def get_discord_invite(self):
         return self.get(f'{self.SELF}/discord/gold')
@@ -293,7 +294,7 @@ class HTTPClient:
     def get_all_artists(self, year=None, limit=None, skip=None):
         base = f'{self.ARTIST}?limit={limit}&skip={skip}'
         if year:
-            base.__add__(f'&fuzzy=year,{year}')
+            base = f'{base}&fuzzy=year,{year}'
         return self.get(base)
 
     def get_all_playlists(self, *, limit=None, skip=None):

@@ -30,23 +30,6 @@ class ConnectException(Exception):
     pass
 
 
-class ClientException(ConnectException):
-    """Exception that's thrown when an operation in the class connect.Client fails."""
-    pass
-
-
-class InvalidArgument(ClientException):
-    """Exception that's thrown when an argument to a function is invalid some way (e.g. wrong value or wrong type)."""
-    pass
-
-
-class LoginFailure(ClientException):
-    """Exception that's thrown when the connect.Client.login 
-    function fails to log you in from improper credentials or some other misc.failure.
-    """
-    pass
-
-
 class HTTPSException(ConnectException):
     """Exception that's thrown when an HTTP request operation fails."""
     def __init__(self, message, response=None):

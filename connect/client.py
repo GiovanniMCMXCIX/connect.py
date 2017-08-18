@@ -31,13 +31,15 @@ from .track import Track
 from .artist import Artist
 from .playlist import Playlist
 from .browse import BrowseEntry
-from typing import List
+from .utils import find
+from typing import List, Tuple
 from urllib.parse import quote
 
 
 class Client:
     def __init__(self):
         self.http = HTTPClient()
+        self.browse_filters = self.http.get(self.http.BROWSE_FILTERS)
 
     def sign_in(self, email: str, password: str, token: int = None):
         """Logs in the client with the specified credentials.
@@ -45,11 +47,11 @@ class Client:
         Parameters
         ----------
         email: str
-
+            Email that the client should use to sign in.
         password: str
-
+            Password that the client should use to sign in.
         token: int
-
+            Token that the client should use to sign in. (2FA Only)
 
         Raises
         ------
@@ -70,26 +72,123 @@ class Client:
         """Logs out of Monstercat Connect."""
         self.http.sign_out()
 
+    def create_playlist(self, name: str, *, public: bool = False, entries: List[Tuple[Track, Release]] = None) -> Playlist:
+        """Creates a playlist.
+
+        Parameters
+        ----------
+        name: str
+           Name of the playlist that is going to be created.
+        public: bool
+           If the playlist that is going to be created should be public or not.
+        entries: List[Tuple[connect.Track, connect.Release]]
+           The tracks that would be added to the playlist that is created.
+
+        Raises
+        ------
+        ValueError
+           Some of the given entries are not valid.
+        Forbidden
+           The client isn't signed in.
+        """
+        if entries:
+            json_entries = []
+            for entry in entries:
+                if find(lambda a: a.id == entry[1].id, entry[0].albums):
+                    json_entries.append({'trackId': entry[0].id, 'releaseId': entry[1].id})
+                else:
+                    raise ValueError(f'The track "{entry[0]}" is not in the release\'s "{entry[1]}" track list.')
+            return Playlist(**self.http.create_playlist(name=name, public=public, entries=json_entries))
+        else:
+            return Playlist(**self.http.create_playlist(name=name, public=public))
+
+    def edit_playlist(self, playlist: Playlist, *, name: str = None, public: bool = False) -> Playlist:
+        """Edits a playlist.
+
+        Parameters
+        ----------
+        playlist: connect.Playlist
+            Playlist that is gonna be edited.
+        name: str
+            New name of the playlist that is edited
+        public: bool
+            If the playlist should be public or not after it's edited
+
+        Raises
+        ------
+        Forbidden
+            The client isn't signed in/ You don't own the playlist.
+        """
+        return Playlist(**self.http.edit_playlist(playlist_id=playlist.id, name=name, public=public))
+
     def edit_profile(self, *, name: str = None, real_name: str = None, location: str = None, password: str = None):
         """Edits the current profile of the client.
 
         Parameters
         ----------
         name: str
-
+            New name of the account's profile.
         real_name: str
-
+            New real name of the account's profile.
         location: str
-
+            New location of the account's profile. (buggy)
         password: str
-
+            New password of the account.
 
         Raises
         ------
         Forbidden
-            The client isn't signed in order to edit the profile.
+            The client isn't signed in.
         """
         self.http.edit_profile(name=name, real_name=real_name, location=location, password=password)
+
+    def add_playlist_track(self, playlist: Playlist, track: Track, release: Release) -> Playlist:
+        """Adds a track to a playlist's tracklist
+
+        Parameters
+        ----------
+        playlist: connect.Playlist
+            Playlist that the track are going added to.
+        track: connect.Track
+            Track that is added to the given playlist.
+        release: connect.Release
+            Release where the track is originated from.
+        Raises
+        ------
+        ValueError
+           Some of the given track, release combination is not valid.
+        Forbidden
+           The client isn't signed in/ You don't own the given playlist.
+        """
+        if find(lambda a: a.id == release.id, track.albums):
+            return Playlist(**self.http.add_playlist_track(playlist_id=playlist.id, track_id=track.id, release_id=release.id))
+        else:
+            raise ValueError(f'The track "{track}" is not in the release\'s "{release}" track list.')
+
+    def add_playlist_tracks(self, playlist: Playlist, entries: List[Tuple[Track, Release]]) -> Playlist:
+        """Adds a track to a playlist's tracklist
+
+        Parameters
+        ----------
+        playlist: connect.Playlist
+            Playlist that the tracks are going added to.
+        entries: List[Tuple[connect.Track, connect.Release]]
+            Tracks that would be added to the given playlist.
+
+        Raises
+        ------
+        ValueError
+           Some of the given track, release combination is not valid.
+        Forbidden
+           The client isn't signed in/ You don't own the given playlist.
+        """
+        json_entries = []
+        for entry in entries:
+            if find(lambda a: a.id == entry[1].id, entry[0].albums):
+                json_entries.append({'trackId': entry[0].id, 'releaseId': entry[1].id})
+            else:
+                raise ValueError(f'The track "{entry[0]}" is not in the release\'s "{entry[1]}" track list.')
+        return Playlist(**self.http.add_playlist_tracks(playlist_id=playlist.id, entries=json_entries))
 
     def add_reddit_username(self, username: str):
         """Adds the reddit username to the current profile of the client.
@@ -97,14 +196,46 @@ class Client:
         Parameters
         ----------
         username: str
-
+            Reddit username that is added to the monstercat account.
 
         Raises
         ------
         NotFound
-            "I need to buy monstercat gold again in order to finish this library" ~ GiovanniMCMXCIX
+            "I need to buy monstercat gold again in order to finish this library" ~ Library Author
         """
         self.http.add_reddit_username(username)
+
+    def delete_playlist(self, playlist: Playlist):
+        """Deletes a playlist.
+
+        Parameters
+        ----------
+        playlist: connect.Playlist
+           The playlist that is deleted.
+
+        Raises
+        ------
+        Forbidden
+            The client isn't signed in/ You don't own the given playlist.
+        """
+        self.http.delete_playlist(playlist.id)
+
+    def delete_playlist_track(self, playlist: Playlist, track: Track) -> Playlist:
+        """Deletes a track from a playlist's tracklist.
+
+        Parameters
+        ----------
+        playlist: connect.Playlist
+           Playlist from where the client should remove the given track.
+        track: connect.Track
+           Track that is deleted from the tracklist of the given playlist.
+
+        Raises
+        ------
+        Forbidden
+            The client isn't signed in/ You don't own the given playlist.
+        """
+        return Playlist(**self.http.delete_playlist_track(playlist_id=playlist.id, track_id=track.id))
 
     def get_discord_invite(self) -> str:
         """Gets an invite for the gold discord channel on the monstercat discord guild.
@@ -113,7 +244,7 @@ class Client:
         Raises
         ------
         NotFound
-            "I need to buy monstercat gold again in order to finish this library" ~ GiovanniMCMXCIX
+            "I need to buy monstercat gold again in order to finish this library" ~ Library Author
         """
         return self.http.get_discord_invite()
 
@@ -123,7 +254,7 @@ class Client:
         Parameters
         ----------
         catalog_id: str
-
+           The id of the release that the client should get.
 
         Raises
         ------
@@ -138,7 +269,7 @@ class Client:
         Parameters
         ----------
         track_id: str
-
+            The id of the track that the client should get.
 
         Raises
         ------
@@ -153,7 +284,7 @@ class Client:
         Parameters
         ----------
         artist_id: str
-
+           The id/vanity_uri of the artist that the client should get.
 
         Raises
         ------
@@ -168,7 +299,7 @@ class Client:
         Parameters
         ----------
         playlist_id: str
-
+            The id of the playlist that the client should get.
 
         Raises
         ------
@@ -185,13 +316,13 @@ class Client:
         Parameters
         ----------
         singles: bool
-
+           If the client should get singles.
         eps: bool
-
+           If the client should get EPs.
         albums: bool
-
+           If the client should get albums.
         podcasts: bool
-
+           If the client should get podcasts.
         limit: int
            The limit for how many tracks are supposed to be shown.
         skip: int
@@ -208,7 +339,7 @@ class Client:
         Parameters
         ----------
         limit: int
-           The limit for how many tracks are supposed to be shown.
+           Limit for how many tracks are supposed to be shown.
         skip: int
            Number of tracks that are skipped to be shown.
         """
@@ -223,9 +354,9 @@ class Client:
         Parameters
         ----------
         year: int
-           The artists from the year specified that are to be shown.
+           Artists from the year specified that are to be shown.
         limit: int
-           The limit for how many artists are supposed to be shown.
+           Limit for how many artists are supposed to be shown.
         skip: int
            Number of artists that are skipped to be shown.
         """
@@ -249,16 +380,17 @@ class Client:
 
     def get_browse_entries(self, *, types: List[str] = None, genres: List[str] = None, tags: List[str] = None, limit: int = None, skip: int = None) -> List[BrowseEntry]:
         # I can't think of a better way to name this function...
-        """Searches for a release.
+        """
+        Check `connect.Client.browse_filters` for filters that are needed to be used on the function's parameters.
 
         Parameters
         ----------
         types: List[str]
-
+            Browse entries types that the API should get.
         genres: List[str]
-
+            Browse entries genres that the API should look for.
         tags: List[str]
-
+            Browse entries tags that the API should look for.
         limit: int
             The limit for how many releases are supposed to be shown.
         skip: int
@@ -285,7 +417,7 @@ class Client:
         term: str
            The release name that is searched.
         limit: int
-           The limit for how many releases are supposed to be shown.
+           Limit for how many releases are supposed to be shown.
         skip: int
            Number of releases that are skipped to be shown.
 
@@ -312,7 +444,7 @@ class Client:
         artists: str
            The release artists that are searched.
         limit: int
-           The limit for how many releases are supposed to be shown.
+           Limit for how many releases are supposed to be shown.
         skip: int
            Number of releases that are skipped to be shown.
 
@@ -337,7 +469,7 @@ class Client:
         term: str
            The track name that is searched.
         limit: int
-           The limit for how many tracks are supposed to be shown.
+           Limit for how many tracks are supposed to be shown.
         skip: int
            Number of tracks that are skipped to be shown.
 
@@ -364,7 +496,7 @@ class Client:
         artists: str
            The track artists that are searched.
         limit: int
-           The limit for how many tracks are supposed to be shown.
+           Limit for how many tracks are supposed to be shown.
         skip: int
            Number of tracks that are skipped to be shown.
 
@@ -391,7 +523,7 @@ class Client:
         year: int
            The artists from the year specified that are to be shown.
         limit: int
-           The limit for how many artists are supposed to be shown.
+           Limit for how many artists are supposed to be shown.
         skip: int
            Number of artists that are skipped to be shown.
 
@@ -419,7 +551,7 @@ class Client:
         term: str
            The playlist name that is searched.
         limit: int
-           The limit for how many playlists are supposed to be shown.
+           Limit for how many playlists are supposed to be shown.
         skip: int
            Number of playlists that are skipped to be shown.
 

@@ -32,7 +32,7 @@ To install the development version, do the following:
 Requirements
 ------------
 
-- Python 3.x
+- Python 3.6+
 - `requests` library
 
 Example
@@ -55,10 +55,3 @@ Example
 
     if __name__ == "__main__":
         get_release()
-
-Bugs
-----
-
-- Lists that come from the library have random positions in versions older than Python 3.6
-
- Example: `['foo', 'bar', 'wew', 'lad']` comes as `['bar', 'lad', 'foo', 'wew']`

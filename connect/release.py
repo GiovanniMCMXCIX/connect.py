@@ -48,19 +48,19 @@ class Release:
         Release type.
     urls: List[str]
         A list of urls for supporting or listening to the release.
-    downloadable: bool
+    is_downloadable: bool
         Indicates if the release can be downloaded.
-    streamable: bool
+    is_streamable: bool
         Indicates if the release can be streamed.
-    early_access: bool
+    is_in_early_access: bool
         Indicates if the release is in early access for gold users.
-    free_download: bool
+    is_free: bool
         Indicates if the track can be downloaded for free.
     """
 
     __slots__ = [
         'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'cover_url',
-        'urls', 'downloadable', 'streamable', 'early_access', 'free_download', '_tracks'
+        'urls', 'is_downloadable', 'is_streamable', 'is_in_early_access', 'is_free', '_tracks'
     ]
 
     def __init__(self, **kwargs):
@@ -72,10 +72,10 @@ class Release:
         self.type = kwargs.pop('type')
         self.cover_url = kwargs.pop('coverUrl')
         self.urls = kwargs.pop('urls')
-        self.downloadable = kwargs.pop('downloadable', None)
-        self.streamable = kwargs.pop('streamable', None)
-        self.early_access = kwargs.pop('inEarlyAccess', None)
-        self.free_download = kwargs.pop('freeDownloadForUsers', None)
+        self.is_downloadable = kwargs.pop('downloadable', None)
+        self.is_streamable = kwargs.pop('streamable', None)
+        self.is_in_early_access = kwargs.pop('inEarlyAccess', None)
+        self.is_free = kwargs.pop('freeDownloadForUsers', None)
         self._tracks = {}
 
     def __eq__(self, other):
