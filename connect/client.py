@@ -27,10 +27,9 @@ SOFTWARE.
 from .http import HTTPClient
 from .errors import NotFound
 from .release import Release
-from .track import Track
+from .track import Track, BrowseEntry
 from .artist import Artist
 from .playlist import Playlist
-from .browse import BrowseEntry
 from .utils import find
 from typing import List, Tuple
 from urllib.parse import quote

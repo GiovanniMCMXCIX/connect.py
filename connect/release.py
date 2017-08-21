@@ -25,7 +25,6 @@ SOFTWARE.
 """
 
 from .http import HTTPClient
-from .track import Track
 from . import utils
 
 
@@ -52,7 +51,7 @@ class Release:
         Indicates if the release can be downloaded.
     is_streamable: bool
         Indicates if the release can be streamed.
-    is_in_early_access: bool
+    in_early_access: bool
         Indicates if the release is in early access for gold users.
     is_free: bool
         Indicates if the track can be downloaded for free.
@@ -60,7 +59,7 @@ class Release:
 
     __slots__ = [
         'id', 'catalog_id', 'artists', 'title', 'release_date', 'type', 'cover_url',
-        'urls', 'is_downloadable', 'is_streamable', 'is_in_early_access', 'is_free', '_tracks'
+        'urls', 'is_downloadable', 'is_streamable', 'in_early_access', 'is_free', '_tracks'
     ]
 
     def __init__(self, **kwargs):
@@ -74,7 +73,7 @@ class Release:
         self.urls = kwargs.pop('urls')
         self.is_downloadable = kwargs.pop('downloadable', None)
         self.is_streamable = kwargs.pop('streamable', None)
-        self.is_in_early_access = kwargs.pop('inEarlyAccess', None)
+        self.in_early_access = kwargs.pop('inEarlyAccess', None)
         self.is_free = kwargs.pop('freeDownloadForUsers', None)
         self._tracks = {}
 
@@ -95,11 +94,12 @@ class Release:
         self._tracks[track.id] = track
 
     @property
-    def tracks(self) -> list:
+    def tracks(self):
         """Returns a list of connect.Tracks items."""
         if self._tracks:
             return list(self._tracks.values())
         else:
+            from .track import Track
             for t_data in HTTPClient().get_release_tracklist(self.id)['results']:
                 track = Track(**t_data)
                 self._add_track(track)
@@ -119,15 +119,24 @@ class ReleaseEntry:
         The release title.
     release_date: datetime.datetime
         A naive UTC datetime object containing the time the release was launched.
+    is_downloadable: bool
+        Indicates if the release can be downloaded.
+    is_streamable: bool
+        Indicates if the release can be streamed.
+    in_early_access: bool
+        Indicates if the release is in early access for gold users.
     """
 
-    __slots__ = ['id', 'catalog_id', 'title', 'release_date']
+    __slots__ = ['id', 'catalog_id', 'title', 'release_date', 'is_downloadable', 'is_streamable', 'in_early_access']
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
         self.catalog_id = kwargs.pop('catalogId', None)
         self.title = kwargs.pop('title')
         self.release_date = utils.parse_time(kwargs.pop('releaseDate'))
+        self.is_downloadable = kwargs.pop('downloadable', None)
+        self.is_streamable = kwargs.pop('streamable', None)
+        self.in_early_access = kwargs.pop('inEarlyAccess', None)
 
     def __eq__(self, other):
         return self.id == other.id and isinstance(other, self.__class__)
@@ -171,7 +180,7 @@ class Album:
         return True
 
     @property
-    def stream_url(self) -> [str, None]:
+    def stream_url(self):
         """Returns a friendly URL version of the stream_id variable the release has."""
         if not self.stream_id:
             return None

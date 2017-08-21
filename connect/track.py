@@ -24,6 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from .release import Release, Album
+from .artist import ArtistEntry
+from typing import List
+
 
 class Track:
     """Represents a track from connect.
@@ -46,19 +50,19 @@ class Track:
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`.
     tags: List[str]
         The track tags.
-    downloadable: bool
+    is_downloadable: bool
         Indicates if the track can be downloaded.
-    streamable: bool
+    is_streamable: bool
         Indicates if the track can be streamed.
-    early_access: bool
+    in_early_access: bool
         Indicates if the track is in early access for gold users.
-    free_download: bool
+    is_free: bool
         Indicates if the track can be downloaded for free.
     """
 
     __slots__ = [
-        'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags', 'downloadable',
-        'streamable', 'early_access', 'free_download', '_albums_raw', '_artists_raw', '_albums', '_artists'
+        'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres', 'tags', 'is_downloadable', 'is_streamable',
+        'in_early_access', 'is_free', '_albums_raw', '_artists_raw', '_albums', '_artists'
     ]
 
     def __init__(self, **kwargs):
@@ -72,10 +76,10 @@ class Track:
         self.genre = kwargs.pop('genre', None)
         self.genres = kwargs.pop('genres')
         self.tags = kwargs.pop('tags')
-        self.downloadable = kwargs.pop('downloadable', None)
-        self.streamable = kwargs.pop('streamable', None)
-        self.early_access = kwargs.pop('inEarlyAccess', None)
-        self.free_download = kwargs.pop('freeDownloadForUsers', None)
+        self.is_downloadable = kwargs.pop('downloadable', None)
+        self.is_streamable = kwargs.pop('streamable', None)
+        self.in_early_access = kwargs.pop('inEarlyAccess', None)
+        self.is_free = kwargs.pop('freeDownloadForUsers', None)
         self._albums_raw = kwargs.pop('albums')
         self._artists_raw = kwargs.pop('artists')
         self._albums = {}
@@ -98,7 +102,7 @@ class Track:
         """List[:class:`release.Album`]: A list of Albums that this track is a part of."""
         return list(self._albums.values())
 
-    def get_artists(self):
+    def get_artists(self) -> List[ArtistEntry]:
         """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""
         return list(self._artists.values())
 
@@ -109,12 +113,63 @@ class Track:
         self._artists[artist.id] = artist
 
     def _from_data(self):
-        from .release import Album
         for data in self._albums_raw:
             release = Album(**data)
             self._add_album(release)
 
-        from .artist import ArtistEntry
+        for data in self._artists_raw:
+            artist = ArtistEntry(**data)
+            self._add_artist(artist)
+
+
+class BrowseEntry(Track):
+    """Represents a track from the browse endpoint.
+
+    Attributes
+    ----------
+    id: str
+        The track ID.
+    artists: str
+        The track artists.
+    title: str
+        The track title.
+    duration: int
+        The track duration.
+    bpm: int
+        The track BPM.
+    genre: str
+        The track genre.
+    genres: List[str]
+        It usually returns a list with one item that is the same with :attr:`connect.Track.genre`.
+    release: :class:`Release`
+
+    albums: :class:`release.Album`
+
+    tags: List[str]
+        The track tags.
+    is_downloadable: bool
+        Indicates if the track can be downloaded.
+    is_streamable: bool
+        Indicates if the track can be streamed.
+    in_early_access: bool
+        Indicates if the track is in early access for gold users.
+    is_free: bool
+        Indicates if the track can be downloaded for free.
+    """
+
+    __slots__ = ['release', '_albums', '_albums_raw']
+
+    def __init__(self, **kwargs):
+        del self._add_album
+        self.release = Release(**kwargs.pop('release'))
+        self._albums = self._albums_raw = Album(**kwargs.pop('albums'))
+        super().__init__(**kwargs)
+
+    @property
+    def albums(self):
+        return self._albums
+
+    def _from_data(self):
         for data in self._artists_raw:
             artist = ArtistEntry(**data)
             self._add_artist(artist)

@@ -26,6 +26,7 @@ SOFTWARE.
 
 from .http import HTTPClient
 from .release import ReleaseEntry
+from .track import Track
 
 
 class Playlist:
@@ -67,7 +68,7 @@ class Playlist:
         return self.name
 
     @property
-    def tracks(self) -> list:
+    def tracks(self):
         """Returns a list of connect.playlist.PlaylistEntry items."""
         if self._tracks:
             return list(self._tracks.values())
@@ -81,7 +82,7 @@ class Playlist:
         self._tracks[track.id] = track
 
 
-class PlaylistEntry:
+class PlaylistEntry(Track):
     """Represents a track from a playlist.
 
     Attributes
@@ -104,64 +105,18 @@ class PlaylistEntry:
         Release that the playlist entry is a part of.
     tags: List[str]
         The track tags.
+    is_downloadable: bool
+        Indicates if the track can be downloaded.
+    is_streamable: bool
+        Indicates if the track can be streamed.
+    in_early_access: bool
+        Indicates if the track is in early access for gold users.
+    is_free: bool
+        Indicates if the track can be downloaded for free.
     """
 
-    __slots__ = [
-        'id', 'artists', 'title', 'duration', 'bpm', 'genre', 'genres',
-        'tags', 'release', '_albums_raw', '_artists_raw', '_albums', '_artists'
-    ]
+    __slots__ = ['release']
 
     def __init__(self, **kwargs):
-        self.id = kwargs.pop('_id')
-        self.artists = kwargs.pop('artistsTitle')
-        self.title = kwargs.pop('title')
-        duration = kwargs.pop('duration', None)
-        bpm = kwargs.pop('bpm', None)
-        self.duration = None if not duration else round(duration)
-        self.bpm = None if not bpm else round(bpm)
-        self.genre = kwargs.pop('genre', None)
-        self.genres = kwargs.pop('genres')
         self.release = ReleaseEntry(**kwargs.pop('release'))
-        self.tags = kwargs.pop('tags')
-        self._albums_raw = kwargs.pop('albums')
-        self._artists_raw = kwargs.pop('artists')
-        self._albums = {}
-        self._artists = {}
-        self._from_data()
-
-    def __eq__(self, other):
-        return self.id == other.id and isinstance(other, self.__class__)
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return self.id != other.id
-        return True
-
-    def __str__(self):
-        return f'{self.artists} - {self.title}'
-
-    @property
-    def albums(self) -> list:
-        """List[:class:`release.Album`]: A list of Albums that this track is a part of."""
-        return list(self._albums.values())
-
-    def get_artists(self) -> list:
-        """List[:class:`artist.ArtistEntry`]: A list of artists that are featured."""
-        return list(self._artists.values())
-
-    def _add_album(self, album):
-        self._albums[album.id] = album
-
-    def _add_artist(self, artist):
-        self._artists[artist.id] = artist
-
-    def _from_data(self):
-        from .release import Album
-        for data in self._albums_raw:
-            release = Album(**data)
-            self._add_album(release)
-
-        from .artist import ArtistEntry
-        for data in self._artists_raw:
-            artist = ArtistEntry(**data)
-            self._add_artist(artist)
+        super().__init__(**kwargs)
