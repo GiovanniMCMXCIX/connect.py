@@ -104,7 +104,7 @@ class PlaylistEntry(Track):
         The track genre.
     genres: List[str]
         It usually returns a list with one item that is the same with :attr:`connect.Track.genre`
-    release: :class:`release.ReleaseEntry`
+    release: connect.release.ReleaseEntry
         Release that the playlist entry is a part of.
     tags: List[str]
         The track tags.

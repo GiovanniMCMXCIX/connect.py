@@ -82,7 +82,9 @@ class Client:
             self._is_closed = True
 
     def create_playlist(self, name: str, *, public: bool = False, entries: List[Tuple[Track, Release]] = None) -> Playlist:
-        """Creates a playlist.
+        """This function is a coroutine.
+
+        Creates a playlist.
 
         Parameters
         ----------
@@ -99,6 +101,11 @@ class Client:
            Some of the given entries are not valid.
         Forbidden
            The client isn't signed in.
+
+        Returns
+        -------
+        Playlist
+            The playlist that was created.
         """
         if entries:
             json_entries = []
@@ -127,6 +134,11 @@ class Client:
         ------
         Forbidden
             The client isn't signed in/ You don't own the playlist.
+
+        Returns
+        -------
+        Playlist
+            The playlist that was edited.
         """
         return Playlist(**self.http.edit_playlist(playlist_id=playlist.id, name=name, public=public))
 
@@ -168,6 +180,11 @@ class Client:
            Some of the given track, release combination is not valid.
         Forbidden
            The client isn't signed in/ You don't own the given playlist.
+
+        Returns
+        -------
+        Playlist
+            The playlist with the track that was added.
         """
         if find(lambda a: a.id == release.id, track.albums):
             return Playlist(**self.http.add_playlist_track(playlist_id=playlist.id, track_id=track.id, release_id=release.id))
@@ -190,6 +207,11 @@ class Client:
            Some of the given track, release combination is not valid.
         Forbidden
            The client isn't signed in/ You don't own the given playlist.
+
+        Returns
+        -------
+        Playlist
+            The playlist with the tracks that were added.
         """
         json_entries = []
         for entry in entries:
@@ -243,6 +265,11 @@ class Client:
         ------
         Forbidden
             The client isn't signed in/ You don't own the given playlist.
+
+        Returns
+        -------
+        Playlist
+            The playlist with the track that was deleted.
         """
         return Playlist(**self.http.delete_playlist_track(playlist_id=playlist.id, track_id=track.id))
 
@@ -269,6 +296,11 @@ class Client:
         ------
         NotFound
             The client couldn't get the release.
+
+        Returns
+        -------
+        Release
+            Release that was requested with the given ID/catalog ID.
         """
         return Release(**self.http.get_release(catalog_id))
 
@@ -284,6 +316,12 @@ class Client:
         ------
         NotFound
             The client couldn't get the track.
+
+
+        Returns
+        -------
+        Track
+            Track that was requested with the given ID.
         """
         return Track(**self.http.get_track(track_id))
 
@@ -299,6 +337,11 @@ class Client:
         ------
         NotFound
             The client couldn't get the artist.
+
+        Returns
+        -------
+        Artist
+            Artist that was requested with the given ID/vanity uri.
         """
         return Artist(**self.http.get_artist(artist_id))
 
@@ -316,6 +359,11 @@ class Client:
             The client can't access a private playlist.
         NotFound
             The client couldn't get the playlist.
+
+        Returns
+        -------
+        Playlist
+            Playlist that was requested with the given ID.
         """
         return Playlist(**self.http.get_playlist(playlist_id))
 
@@ -336,6 +384,11 @@ class Client:
            The limit for how many tracks are supposed to be shown.
         skip: int
            Number of tracks that are skipped to be shown.
+
+        Returns
+        -------
+        List[Release]
+            All the singles/eps/albums/podcasts (depends how you set the parameters) that are available.
         """
         releases = []
         for release in self.http.get_all_releases(singles=singles, eps=eps, albums=albums, podcasts=podcasts, limit=limit, skip=skip)['results']:
@@ -351,6 +404,11 @@ class Client:
            Limit for how many tracks are supposed to be shown.
         skip: int
            Number of tracks that are skipped to be shown.
+
+        Returns
+        -------
+        List[Track]
+            All the tracks that are available.
         """
         tracks = []
         for track in self.http.get_all_tracks(limit=limit, skip=skip)['results']:
@@ -368,6 +426,11 @@ class Client:
            Limit for how many artists are supposed to be shown.
         skip: int
            Number of artists that are skipped to be shown.
+
+        Returns
+        -------
+        List[Artist]
+            All the artists that are available.
         """
         artists = []
         for artist in self.http.get_all_artists(year=year, limit=limit, skip=skip)['results']:
@@ -377,10 +440,22 @@ class Client:
     def get_all_playlists(self, *, limit: int = None, skip: int = None) -> List[Playlist]:
         """Retrieves every playlist the client can access.
 
+        Parameters
+        ----------
+        limit: int
+           Limit for how many playlists are supposed to be shown.
+        skip: int
+           Number of playlists that are skipped to be shown.
+
         Raises
         ------
         Unauthorized
             The client isn't signed in.
+
+        Returns
+        -------
+        List[Playlist]
+           All the playlists that the account has.
         """
         playlists = []
         for playlist in self.http.get_all_playlists(limit=limit, skip=skip)['results']:
@@ -409,6 +484,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any releases.
+
+        Returns
+        -------
+        List[BrowseEntry]
+            List of browse entries that the API could find with the given filters.
         """
         entries = []
         for entry in self.http.get_browse_entries(types=types, genres=genres, tags=tags, limit=limit, skip=skip)['results']:
@@ -434,6 +514,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any releases.
+
+        Returns
+        -------
+        List[Release]
+            List of releases that the API could find.
         """
         releases = []
         for release in self.http.get(f'{self.http.RELEASE}?fuzzyOr=title,{quote(term)},renderedArtists,{quote(term)}&limit={limit}&skip={skip}')['results']:
@@ -461,6 +546,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any releases.
+
+        Returns
+        -------
+        List[Release]
+            List of releases that the API could find.
         """
         releases = []
         for release in self.http.get(f'{self.http.RELEASE}?fuzzy=title,{quote(title)},renderedArtists,{quote(artists)}&limit={limit}&skip={skip}')['results']:
@@ -486,6 +576,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any tracks.
+
+        Returns
+        -------
+        List[Track]
+            List of tracks that the API could find.
         """
         tracks = []
         for track in self.http.get(f'{self.http.TRACK}?fuzzyOr=title,{quote(term)},artistsTitle,{quote(term)}&limit={limit}&skip={skip}')['results']:
@@ -513,6 +608,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any tracks.
+
+        Returns
+        -------
+        List[Track]
+            List of tracks that the API could find.
         """
         tracks = []
         for track in self.http.get(f'{self.http.TRACK}?fuzzy=title,{quote(title)},artistsTitle,{quote(artists)}&limit={limit}&skip={skip}')['results']:
@@ -540,6 +640,11 @@ class Client:
         ------
         NotFound
             The client couldn't find any artists.
+
+        Returns
+        -------
+        List[Artist]
+            List of artists that the API could find.
         """
         artists = []
         base = f'{self.http.ARTIST}?limit={limit}&skip={skip}&fuzzyOr=name,{quote(term)}'
@@ -570,6 +675,11 @@ class Client:
             The client isn't signed in.
         NotFound
             The client couldn't find any playlists.
+
+        Returns
+        -------
+        List[Playlist]
+            List of playlists that the API could find.
         """
         playlists = []
         for playlist in self.http.get(f'{self.http.PLAYLIST}?fuzzyOr=name,{quote(term)}&limit={limit}&skip={skip}')['results']:

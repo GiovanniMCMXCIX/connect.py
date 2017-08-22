@@ -78,7 +78,7 @@ class Artist:
 
     @property
     def releases(self):
-        """List[:class:`Release`]: A list of the artist's releases or appearances."""
+        """A list of the artist's releases or appearances."""
         if self._releases:
             return list(self._releases.values())
         else:
