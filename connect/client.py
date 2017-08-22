@@ -65,7 +65,7 @@ class Client:
     @property
     def is_signed_in(self):
         """bool: Indicates if the client has logged in successfully."""
-        return self.http.is_singed_in()
+        return self.http.is_signed_in()
 
     def sign_out(self):
         """Logs out of Monstercat Connect."""
@@ -534,7 +534,7 @@ class Client:
         artists = []
         base = f'{self.http.ARTIST}?limit={limit}&skip={skip}&fuzzyOr=name,{quote(term)}'
         if year:
-            base.__add__(f',year,{year}')
+            base = f'{base},year,{year}'
         for artist in self.http.get(base)['results']:
             artists.append(Artist(**artist))
         if not artists:

@@ -48,7 +48,7 @@ class TestGetCatalog(unittest.TestCase):
     def test_track(self):
         track = client.get_track('512bdb6db9a8860a11000029')
         print('\n[connect.Client.get_track]\n{0.title} by {0.artists} has been featured on the following releases:'.format(track))
-        self.assertEqual(track.artists, str(client.get_artist(track.get_artists()[0])))
+        self.assertEqual(track.artists, str(client.get_artist(track.get_artists()[0].id)))
         release = client.get_release('MC011')
         self.assertEqual([album.id for album in track.albums if album.id == release.id][0], release.id)
         for album in track.albums:

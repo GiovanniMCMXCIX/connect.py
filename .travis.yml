@@ -5,6 +5,7 @@ cache: pip
 
 python:
   - '3.6'
+  - '3.6-dev'
   - 'nightly'
 
 script: 'python setup.py test'

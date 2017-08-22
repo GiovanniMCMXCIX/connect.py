@@ -73,8 +73,8 @@ class Playlist:
         if self._tracks:
             return list(self._tracks.values())
         else:
-            for t_data in HTTPClient().get_playlist_tracklist(self.id)['results']:
-                track = PlaylistEntry(**t_data)
+            for data in HTTPClient().get_playlist_tracklist(self.id)['results']:
+                track = PlaylistEntry(**data)
                 self._add_track(track)
             return list(self._tracks.values())
 

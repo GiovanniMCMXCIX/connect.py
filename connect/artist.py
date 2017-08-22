@@ -85,8 +85,8 @@ class Artist:
         if self._releases:
             return list(self._releases.values())
         else:
-            for r_data in HTTPClient().get_artist_releases(self.id)['results']:
-                release = Release(**r_data)
+            for data in HTTPClient().get_artist_releases(self.id)['results']:
+                release = Release(**data)
                 self._add_release(release)
             return list(self._releases.values())
 

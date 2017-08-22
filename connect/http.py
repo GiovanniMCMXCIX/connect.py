@@ -66,48 +66,45 @@ class HTTPClient:
 
         kwargs['headers'] = headers
         response = self.session.request(method, url, **kwargs)
-        try:
-            if 'stream' in kwargs:
-                def raise_error(error, use_response=False):
-                    try:
-                        if use_response:
-                            raise error(json.loads(response.text).pop('message', 'Unknown error'), response)
-                        else:
-                            raise error(json.loads(response.text).pop('message', 'Unknown error'))
-                    except json.decoder.JSONDecodeError:
-                        if use_response:
-                            raise error({'message': response.text} if response.text else 'Unknown error', response)
-                        else:
-                            raise error({'message': response.text} if response.text else 'Unknown error')
-
-                if 300 > response.status_code >= 200:
-                    return response
-                elif response.status_code == 401:
-                    raise_error(Unauthorized)
-                elif response.status_code == 403:
-                    raise_error(Forbidden)
-                elif response.status_code == 404:
-                    raise_error(NotFound)
-                else:
-                    raise_error(HTTPSException, True)
-            else:
+        if 'stream' in kwargs:
+            def raise_error(error, use_response=False):
                 try:
-                    data = json.loads(response.text)
+                    if use_response:
+                        raise error(json.loads(response.text).pop('message', 'Unknown error'), response)
+                    else:
+                        raise error(json.loads(response.text).pop('message', 'Unknown error'))
                 except json.decoder.JSONDecodeError:
-                    data = {'message': response.text} if response.text else None
+                    if use_response:
+                        raise error({'message': response.text} if response.text else 'Unknown error', response)
+                    else:
+                        raise error({'message': response.text} if response.text else 'Unknown error')
 
-                if 300 > response.status_code >= 200:
-                    return data
-                elif response.status_code == 401:
-                    raise Unauthorized(data.pop('message', 'Unknown error'))
-                elif response.status_code == 403:
-                    raise Forbidden(data.pop('message', 'Unknown error'))
-                elif response.status_code == 404:
-                    raise NotFound(data.pop('message', 'Unknown error'))
-                else:
-                    raise HTTPSException(data.pop('message', 'Unknown error'), response)
-        except Exception as e:
-            raise e
+            if 300 > response.status_code >= 200:
+                return response
+            elif response.status_code == 401:
+                raise_error(Unauthorized)
+            elif response.status_code == 403:
+                raise_error(Forbidden)
+            elif response.status_code == 404:
+                raise_error(NotFound)
+            else:
+                raise_error(HTTPSException, True)
+        else:
+            try:
+                data = json.loads(response.text)
+            except json.decoder.JSONDecodeError:
+                data = {'message': response.text} if response.text else None
+
+            if 300 > response.status_code >= 200:
+                return data
+            elif response.status_code == 401:
+                raise Unauthorized(data.pop('message', 'Unknown error'))
+            elif response.status_code == 403:
+                raise Forbidden(data.pop('message', 'Unknown error'))
+            elif response.status_code == 404:
+                raise NotFound(data.pop('message', 'Unknown error'))
+            else:
+                raise HTTPSException(data.pop('message', 'Unknown error'), response)
 
     def get(self, *args, **kwargs):
         return self.request('GET', *args, **kwargs)
@@ -138,7 +135,7 @@ class HTTPClient:
         self.email_sign_in(email, password)
         self.post(f'{self.SIGN_IN}/token', json=payload)
 
-    def is_singed_in(self):
+    def is_signed_in(self):
         response = self.get(f'{self.SELF}/session')
         if not response.get('user'):
             return False
