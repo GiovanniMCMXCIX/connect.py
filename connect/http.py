@@ -25,9 +25,13 @@ SOFTWARE.
 """
 
 import requests
-import json
 import sys
 import re
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 from .errors import HTTPSException, Unauthorized, Forbidden, NotFound
 from . import utils, __version__
@@ -78,6 +82,11 @@ class HTTPClient:
                         raise error({'message': response.text} if response.text else 'Unknown error', response)
                     else:
                         raise error({'message': response.text} if response.text else 'Unknown error')
+                except ValueError:
+                    if use_response:
+                        raise error({'message': response.text} if response.text else 'Unknown error', response)
+                    else:
+                        raise error({'message': response.text} if response.text else 'Unknown error')
 
             if 300 > response.status_code >= 200:
                 return response
@@ -93,6 +102,8 @@ class HTTPClient:
             try:
                 data = json.loads(response.text)
             except json.decoder.JSONDecodeError:
+                data = {'message': response.text} if response.text else None
+            except ValueError:
                 data = {'message': response.text} if response.text else None
 
             if 300 > response.status_code >= 200:
@@ -120,6 +131,9 @@ class HTTPClient:
 
     def post(self, *args, **kwargs):
         return self.request('POST', *args, **kwargs)
+
+    def close(self):
+        self.session.close()
 
     def email_sign_in(self, email, password):
         payload = {

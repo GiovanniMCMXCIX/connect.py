@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .http import HTTPClient
 from .release import ReleaseEntry
 from .track import Track
 
@@ -73,7 +72,11 @@ class Playlist:
         if self._tracks:
             return list(self._tracks.values())
         else:
-            for data in HTTPClient().get_playlist_tracklist(self.id)['results']:
+            from .http import HTTPClient
+            http = HTTPClient()
+            tracklist = http.get_playlist_tracklist(self.id)
+            http.close()
+            for data in tracklist['results']:
                 track = PlaylistEntry(**data)
                 self._add_track(track)
             return list(self._tracks.values())

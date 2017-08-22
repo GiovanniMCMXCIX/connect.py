@@ -24,9 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .http import HTTPClient
-from .release import Release
-
 
 class Artist:
     """Represents a release from connect.
@@ -85,7 +82,12 @@ class Artist:
         if self._releases:
             return list(self._releases.values())
         else:
-            for data in HTTPClient().get_artist_releases(self.id)['results']:
+            from .http import HTTPClient
+            from .release import Release
+            http = HTTPClient()
+            releases = http.get_artist_releases(self.id)
+            http.close()
+            for data in releases['results']:
                 release = Release(**data)
                 self._add_release(release)
             return list(self._releases.values())

@@ -27,30 +27,31 @@ SOFTWARE.
 import unittest
 import connect
 
-client = connect.Client()
-
 
 class TestGetAllCatalog(unittest.TestCase):
-    @connect.utils.ignore_warnings
+    def setUp(self):
+        self.connect = connect.Client()
+
     def test_release(self):
         print('\n[connect.Client.get_all_releases]')
         releases = []
-        for release in client.get_all_releases():
+        for release in self.connect.get_all_releases():
             releases.append((str(release), len(release.tracks)))
         print(f'There are {len(releases)} total releases.')
 
-    @connect.utils.ignore_warnings
     def test_track(self):
         print('\n[connect.Client.get_all_tracks]')
         tracks = []
-        for track in client.get_all_tracks():
+        for track in self.connect.get_all_tracks():
             tracks.append((str(track), len(track.albums)))
         print(f'There are {len(tracks)} total tracks.')
 
-    @connect.utils.ignore_warnings
     def test_artist(self):
         print('\n[connect.Client.get_all_artists]')
         artists = []
-        for artist in client.get_all_artists():
+        for artist in self.connect.get_all_artists():
             artists.append((str(artist), len(artist.releases)))
         print(f'There are {len(artists)} total artists.')
+
+    def tearDown(self):
+        self.connect.close()

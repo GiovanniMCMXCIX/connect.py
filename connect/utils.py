@@ -25,9 +25,12 @@ SOFTWARE.
 """
 
 import re
-import json
 import datetime
-import warnings
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 
 class DownloadLinkGenerator:
@@ -72,11 +75,3 @@ def find(predicate, items):
         if predicate(item):
             return item
     return None
-
-
-def ignore_warnings(test_func):
-    def do_test(*args, **kwargs):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", ResourceWarning)
-            test_func(*args, **kwargs)
-    return do_test

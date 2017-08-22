@@ -39,6 +39,7 @@ class Client:
     def __init__(self):
         self.http = HTTPClient()
         self.browse_filters = self.http.get(self.http.BROWSE_FILTERS)
+        self._is_closed = False
 
     def sign_in(self, email: str, password: str, token: int = None):
         """Logs in the client with the specified credentials.
@@ -68,8 +69,17 @@ class Client:
         return self.http.is_signed_in()
 
     def sign_out(self):
-        """Logs out of Monstercat Connect."""
+        """Logs out of Monstercat Connect and closes all connections."""
         self.http.sign_out()
+        self.close()
+
+    def close(self):
+        """Closes all connections."""
+        if self._is_closed:
+            return
+        else:
+            self.http.close()
+            self._is_closed = True
 
     def create_playlist(self, name: str, *, public: bool = False, entries: List[Tuple[Track, Release]] = None) -> Playlist:
         """Creates a playlist.
