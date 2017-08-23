@@ -519,7 +519,7 @@ class Client:
             List of releases that the API could find.
         """
         releases = []
-        for release in self.http.get(f'{self.http.RELEASE}?fuzzyOr=title,{quote(term)},renderedArtists,{quote(term)}&limit={limit}&skip={skip}')['results']:
+        for release in self.http.request('GET', f'{self.http.RELEASE}?fuzzyOr=title,{quote(term)},renderedArtists,{quote(term)}&limit={limit}&skip={skip}')['results']:
             releases.append(Release(**release))
         if not releases:
             raise NotFound('No release was found.')
@@ -551,7 +551,7 @@ class Client:
             List of releases that the API could find.
         """
         releases = []
-        for release in self.http.get(f'{self.http.RELEASE}?fuzzy=title,{quote(title)},renderedArtists,{quote(artists)}&limit={limit}&skip={skip}')['results']:
+        for release in self.http.request('GET', f'{self.http.RELEASE}?fuzzy=title,{quote(title)},renderedArtists,{quote(artists)}&limit={limit}&skip={skip}')['results']:
             releases.append(Release(**release))
         if not releases:
             raise NotFound('No release was found.')
@@ -581,7 +581,7 @@ class Client:
             List of tracks that the API could find.
         """
         tracks = []
-        for track in self.http.get(f'{self.http.TRACK}?fuzzyOr=title,{quote(term)},artistsTitle,{quote(term)}&limit={limit}&skip={skip}')['results']:
+        for track in self.http.request('GET', f'{self.http.TRACK}?fuzzyOr=title,{quote(term)},artistsTitle,{quote(term)}&limit={limit}&skip={skip}')['results']:
             tracks.append(Track(**track))
         if not tracks:
             raise NotFound('No track was found.')
@@ -613,7 +613,7 @@ class Client:
             List of tracks that the API could find.
         """
         tracks = []
-        for track in self.http.get(f'{self.http.TRACK}?fuzzy=title,{quote(title)},artistsTitle,{quote(artists)}&limit={limit}&skip={skip}')['results']:
+        for track in self.http.request('GET', f'{self.http.TRACK}?fuzzy=title,{quote(title)},artistsTitle,{quote(artists)}&limit={limit}&skip={skip}')['results']:
             tracks.append(Track(**track))
         if not tracks:
             raise NotFound('No track was found.')
@@ -648,7 +648,7 @@ class Client:
         base = f'{self.http.ARTIST}?limit={limit}&skip={skip}&fuzzyOr=name,{quote(term)}'
         if year:
             base = f'{base},year,{year}'
-        for artist in self.http.get(base)['results']:
+        for artist in self.http.request('GET', base)['results']:
             artists.append(Artist(**artist))
         if not artists:
             raise NotFound('No artist was found.')
@@ -680,7 +680,7 @@ class Client:
             List of playlists that the API could find.
         """
         playlists = []
-        for playlist in self.http.get(f'{self.http.PLAYLIST}?fuzzyOr=name,{quote(term)}&limit={limit}&skip={skip}')['results']:
+        for playlist in self.http.request('GET', f'{self.http.PLAYLIST}?fuzzyOr=name,{quote(term)}&limit={limit}&skip={skip}')['results']:
             playlists.append(Playlist(**playlist))
         if not playlists:
             raise NotFound('No playlist was found.')
