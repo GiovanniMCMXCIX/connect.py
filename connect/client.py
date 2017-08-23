@@ -82,9 +82,7 @@ class Client:
             self._is_closed = True
 
     def create_playlist(self, name: str, *, public: bool = False, entries: List[Tuple[Track, Release]] = None) -> Playlist:
-        """This function is a coroutine.
-
-        Creates a playlist.
+        """Creates a playlist.
 
         Parameters
         ----------
