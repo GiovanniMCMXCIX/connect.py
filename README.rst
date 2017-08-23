@@ -2,9 +2,9 @@ connect.py
 ==========
 
 .. image:: https://img.shields.io/pypi/v/connect.py.svg
-   :target: https://pypi.python.org/pypi/connect.py/
+   :target: https://pypi.python.org/pypi/connect.py
 .. image:: https://img.shields.io/pypi/pyversions/connect.py.svg
-   :target: https://pypi.python.org/pypi/connect.py/
+   :target: https://pypi.python.org/pypi/connect.py
 .. image:: https://travis-ci.org/GiovanniMCMXCIX/connect.py.svg?branch=master
    :target: https://travis-ci.org/GiovanniMCMXCIX/connect.py
 .. image:: https://discordapp.com/api/v7/guilds/119860281919668226/embed.png?style=shield
@@ -34,6 +34,16 @@ Requirements
 
 - Python 3.6+
 - `requests` library
+
+Extra Requirements
+------------------
+
+This library contains an extra requirement that is name `performance` in other the library to work faster.
+You can install it using the following command:
+
+.. code:: sh
+
+    python3 -m pip install -U async-connect.py#egg=async-connect.py[performance]
 
 Example
 -------
