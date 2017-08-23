@@ -43,7 +43,7 @@ You can install it using the following command:
 
 .. code:: sh
 
-    python3 -m pip install -U async-connect.py#egg=async-connect.py[performance]
+    python3 -m pip install -U connect.py#egg=connect.py[performance]
 
 Example
 -------
