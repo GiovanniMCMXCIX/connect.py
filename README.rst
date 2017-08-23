@@ -27,23 +27,24 @@ To install the development version, do the following:
 
 .. code:: sh
 
-    python3 -m pip install -U https://github.com/GiovanniMCMXCIX/connect.py/archive/master.zip
+    python3 -m pip install -U https://github.com/GiovanniMCMXCIX/connect.py/archive/master.zip#egg=connect.py[performance]
 
 Requirements
 ------------
 
 - Python 3.6+
-- `requests` library
+- ``requests`` library
 
 Extra Requirements
 ------------------
 
-This library contains an extra requirement that is name `performance` in other the library to work faster.
+This library contains an extra requirement that is name ``performance`` in other the library to work faster.
+
 You can install it using the following command:
 
 .. code:: sh
 
-    python3 -m pip install -U connect.py#egg=connect.py[performance]
+    python3 -m pip install -U connect.py[performance]
 
 Example
 -------

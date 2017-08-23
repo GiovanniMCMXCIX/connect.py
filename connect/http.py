@@ -70,67 +70,62 @@ class HTTPClient:
 
         kwargs['headers'] = headers
         response = self.session.request(method, url, **kwargs)
-        if 'stream' in kwargs:
-            def raise_error(error, use_response=False):
-                try:
-                    if use_response:
-                        raise error(json.loads(response.text).pop('message', 'Unknown error'), response)
-                    else:
-                        raise error(json.loads(response.text).pop('message', 'Unknown error'))
-                except json.decoder.JSONDecodeError:
-                    if use_response:
-                        raise error({'message': response.text} if response.text else 'Unknown error', response)
-                    else:
-                        raise error({'message': response.text} if response.text else 'Unknown error')
-                except ValueError:
-                    if use_response:
-                        raise error({'message': response.text} if response.text else 'Unknown error', response)
-                    else:
-                        raise error({'message': response.text} if response.text else 'Unknown error')
+        try:
+            data = json.loads(response.text)
+        except json.decoder.JSONDecodeError:
+            data = {'message': response.text} if response.text else None
+        except ValueError:
+            data = {'message': response.text} if response.text else None
 
-            if 300 > response.status_code >= 200:
-                return response
-            elif response.status_code == 401:
-                raise_error(Unauthorized)
-            elif response.status_code == 403:
-                raise_error(Forbidden)
-            elif response.status_code == 404:
-                raise_error(NotFound)
-            else:
-                raise_error(HTTPSException, True)
+        if 300 > response.status_code >= 200:
+            return data
+        elif response.status_code == 401:
+            raise Unauthorized(data.pop('message', 'Unknown error'))
+        elif response.status_code == 403:
+            raise Forbidden(data.pop('message', 'Unknown error'))
+        elif response.status_code == 404:
+            raise NotFound(data.pop('message', 'Unknown error'))
         else:
+            raise HTTPSException(data.pop('message', 'Unknown error'), response)
+
+    def download(self, url, path, chunk_size=4096, **kwargs):
+        def raise_error(error, resp, use_resp=False):
+            text = resp.text
             try:
-                data = json.loads(response.text)
+                if use_resp:
+                    raise error(json.loads(text).pop('message', 'Unknown error'), response)
+                else:
+                    raise error(json.loads(text).pop('message', 'Unknown error'))
             except json.decoder.JSONDecodeError:
-                data = {'message': response.text} if response.text else None
+                if use_resp:
+                    raise error({'message': text} if text else 'Unknown error', response)
+                else:
+                    raise error({'message': text} if text else 'Unknown error')
             except ValueError:
-                data = {'message': response.text} if response.text else None
-
-            if 300 > response.status_code >= 200:
-                return data
-            elif response.status_code == 401:
-                raise Unauthorized(data.pop('message', 'Unknown error'))
-            elif response.status_code == 403:
-                raise Forbidden(data.pop('message', 'Unknown error'))
-            elif response.status_code == 404:
-                raise NotFound(data.pop('message', 'Unknown error'))
-            else:
-                raise HTTPSException(data.pop('message', 'Unknown error'), response)
-
-    def get(self, *args, **kwargs):
-        return self.request('GET', *args, **kwargs)
-
-    def put(self, *args, **kwargs):
-        return self.request('PUT', *args, **kwargs)
-
-    def patch(self, *args, **kwargs):
-        return self.request('PATCH', *args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        return self.request('DELETE', *args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        return self.request('POST', *args, **kwargs)
+                if use_resp:
+                    raise error({'message': text} if text else 'Unknown error', response)
+                else:
+                    raise error({'message': text} if text else 'Unknown error')
+        kwargs['headers'] = {'User-Agent': self.user_agent}
+        kwargs['stream'] = True
+        response = self.request('GET', url, **kwargs)
+        filename = kwargs.pop('filename', None)
+        if 300 > response.status_code >= 200:
+            if not filename:
+                filename = str.replace(re.findall("filename=(.+)", response.headers['content-disposition'])[0], "\"", "")
+            with open(f'{path}/{filename}', 'wb') as file:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        file.write(chunk)
+            return True
+        elif response.status == 401:
+            raise_error(Unauthorized, response)
+        elif response.status == 403:
+            raise_error(Forbidden, response)
+        elif response.status == 404:
+            raise_error(NotFound, response)
+        else:
+            raise_error(HTTPSException, response, True)
 
     def close(self):
         self.session.close()
@@ -140,24 +135,24 @@ class HTTPClient:
             'email': email,
             'password': password
         }
-        self.post(self.SIGN_IN, json=payload)
+        self.request('POST', self.SIGN_IN, json=payload)
 
     def two_feature_sign_in(self, email, password, token):
         payload = {
             'token': token
         }
         self.email_sign_in(email, password)
-        self.post(f'{self.SIGN_IN}/token', json=payload)
+        self.request('POST', f'{self.SIGN_IN}/token', json=payload)
 
     def is_signed_in(self):
-        response = self.get(f'{self.SELF}/session')
+        response = self.request('GET', f'{self.SELF}/session')
         if not response.get('user'):
             return False
         if response.get('user').get('subscriber', False) is True:
             return True
 
     def sign_out(self):
-        self.post(self.SIGN_OUT)
+        self.request('POST', self.SIGN_OUT)
 
     def create_playlist(self, name, *, public=False, entries=None):
         payload = {
@@ -166,7 +161,7 @@ class HTTPClient:
         }
         if entries:
             payload['tracks'] = entries
-        return self.post(f'{self.PLAYLIST}', json=payload)
+        return self.request('POST', f'{self.PLAYLIST}', json=payload)
 
     def edit_profile(self, *, name=None, real_name=None, location=None, password=None):
         payload = {}
@@ -178,7 +173,7 @@ class HTTPClient:
             payload['location'] = location
         if password:
             payload['password'] = password
-        return self.patch(self.SELF, json=payload)
+        return self.request('PATCH', self.SELF, json=payload)
 
     def edit_playlist(self, playlist_id, *, name=None, public=False):
         payload = {}
@@ -186,93 +181,69 @@ class HTTPClient:
             payload['name'] = name
         if public:
             payload['public'] = public
-        return self.patch(f'{self.PLAYLIST}/{playlist_id}', json=payload)
+        return self.request('PATCH', f'{self.PLAYLIST}/{playlist_id}', json=payload)
 
     def add_playlist_track(self, playlist_id, track_id, release_id):
         playlist = self.get_playlist(playlist_id)
         playlist['tracks'].append({'trackId': track_id, 'releaseId': release_id})
-        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
+        return self.request('PUT', f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
     def add_playlist_tracks(self, playlist_id, entries):
         playlist = self.get_playlist(playlist_id)
         for entry in entries:
             playlist['tracks'].append(entry)
-        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
+        return self.request('PUT', f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
     def add_reddit_username(self, username):
         payload = {
             'redditUsername': username
         }
-        self.post(f'{self.SELF}/update-reddit', json=payload)
+        self.request('POST', f'{self.SELF}/update-reddit', json=payload)
 
     def delete_playlist(self, playlist_id):
-        self.delete(f'{self.PLAYLIST}/{playlist_id}')
+        self.request('DELETE', f'{self.PLAYLIST}/{playlist_id}')
 
     def delete_playlist_track(self, playlist_id, track_id):
         playlist = self.get_playlist(playlist_id)
         track = [item for item in playlist['tracks'] if item['trackId'] == track_id][0]
         del playlist['tracks'][playlist['tracks'].index(track)]
-        return self.put(f'{self.PLAYLIST}/{playlist_id}', json=playlist)
+        return self.request('PUT', f'{self.PLAYLIST}/{playlist_id}', json=playlist)
 
-    def download_release(self, album_id, path, audio_format):
-        r = self.get(self.download_link_gen.release(album_id, audio_format), stream=True)
-        filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
-        full_path = path + "/" + filename
+    def download_release(self, album_id, path, audio_format, chunk_size=8192):
+        return self.download(self.download_link_gen.release(album_id, audio_format), path, chunk_size=chunk_size)
 
-        with open(full_path, 'wb') as file:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    file.write(chunk)
-        return True
+    def download_track(self, album_id, track_id, path, audio_format, chunk_size=8192):
+        return self.download(self.download_link_gen.track(album_id, track_id, audio_format), path, chunk_size=chunk_size)
 
-    def download_track(self, album_id, track_id, path, audio_format):
-        r = self.get(self.download_link_gen.track(album_id, track_id, audio_format), stream=True)
-        filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
-        full_path = path + "/" + filename
-
-        with open(full_path, 'wb') as file:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    file.write(chunk)
-        return True
-
-    def download_playlist(self, playlist_id, page, path, audio_format):
-        r = self.get(self.download_link_gen.playlist(playlist_id, audio_format, page), stream=True)
-        filename = str.replace(re.findall("filename=(.+)", r.headers['content-disposition'])[0], "\"", "")
-        full_path = path + "/" + filename
-
-        with open(full_path, 'wb') as file:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    file.write(chunk)
-        return True
+    def download_playlist(self, playlist_id, page, path, audio_format, chunk_size=8192):
+        return self.download(self.download_link_gen.playlist(playlist_id, audio_format, page), path, chunk_size=chunk_size)
 
     def get_self(self):
-        return self.get(self.SELF)
+        return self.request('GET', self.SELF)
 
     def get_discord_invite(self):
-        return self.get(f'{self.SELF}/discord/gold')
+        return self.request('GET', f'{self.SELF}/discord/gold')
 
     def get_release(self, catalog_id):
-        return self.get(f'{self.RELEASE}/{catalog_id}')
+        return self.request('GET', f'{self.RELEASE}/{catalog_id}')
 
     def get_release_tracklist(self, release_id):
-        return self.get(f'{self.RELEASE}/{release_id}/tracks')
+        return self.request('GET', f'{self.RELEASE}/{release_id}/tracks')
 
     def get_track(self, track_id):
-        return self.get(f'{self.TRACK}/{track_id}')
+        return self.request('GET', f'{self.TRACK}/{track_id}')
 
     def get_artist(self, artist_id):
-        return self.get(f'{self.ARTIST}/{artist_id}')
+        return self.request('GET', f'{self.ARTIST}/{artist_id}')
 
     def get_artist_releases(self, artist_id):
-        return self.get(f'{self.ARTIST}/{artist_id}/releases')
+        return self.request('GET', f'{self.ARTIST}/{artist_id}/releases')
 
     def get_playlist(self, playlist_id):
-        return self.get(f'{self.PLAYLIST}/{playlist_id}')
+        return self.request('GET', f'{self.PLAYLIST}/{playlist_id}')
 
     def get_playlist_tracklist(self, playlist_id):
-        return self.get(f'{self.PLAYLIST}/{playlist_id}/tracks')
+        return self.request('GET', f'{self.PLAYLIST}/{playlist_id}/tracks')
 
     def get_browse_entries(self, *, types=None, genres=None, tags=None, limit=None, skip=None):
         query = []
@@ -282,7 +253,7 @@ class HTTPClient:
             query.append(f'&genres={",".join(genres)}')
         if tags:
             query.append(f'&tags={",".join(tags)}')
-        return self.get(f'{self.BROWSE}?limit={limit}&skip={skip}{"".join(query)}')
+        return self.request('GET', f'{self.BROWSE}?limit={limit}&skip={skip}{"".join(query)}')
 
     def get_all_releases(self, *, singles=True, eps=True, albums=True, podcasts=False, limit=None, skip=None):
         query = []
@@ -295,18 +266,18 @@ class HTTPClient:
         if podcasts:
             query.append('type,Podcast')
         if not singles and not eps and not albums and not podcasts:
-            return self.get(f'{self.RELEASE}?fuzzyOr=type,None')
+            return self.request('GET', f'{self.RELEASE}?fuzzyOr=type,None')
         else:
-            return self.get(f'{self.RELEASE}?fuzzyOr={",".join(query)}&limit={limit}&skip={skip}')
+            return self.request('GET', f'{self.RELEASE}?fuzzyOr={",".join(query)}&limit={limit}&skip={skip}')
 
     def get_all_tracks(self, limit=None, skip=None):
-        return self.get(f'{self.TRACK}?limit={limit}&skip{skip}')
+        return self.request('GET', f'{self.TRACK}?limit={limit}&skip{skip}')
 
     def get_all_artists(self, year=None, limit=None, skip=None):
         base = f'{self.ARTIST}?limit={limit}&skip={skip}'
         if year:
             base = f'{base}&fuzzy=year,{year}'
-        return self.get(base)
+        return self.request('GET', base)
 
     def get_all_playlists(self, *, limit=None, skip=None):
-        return self.get(f'{self.PLAYLIST}?limit={limit}&skip={skip}')
+        return self.request('GET', f'{self.PLAYLIST}?limit={limit}&skip={skip}')
