@@ -38,7 +38,7 @@ from urllib.parse import quote
 class Client:
     def __init__(self):
         self.http = HTTPClient()
-        self.browse_filters = self.http.get(self.http.BROWSE_FILTERS)
+        self.browse_filters = self.http.request('GET', self.http.BROWSE_FILTERS)
         self._is_closed = False
 
     def sign_in(self, email: str, password: str, token: int = None):
