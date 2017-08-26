@@ -108,8 +108,8 @@ class HTTPClient:
                     raise error({'message': text} if text else 'Unknown error')
         kwargs['headers'] = {'User-Agent': self.user_agent}
         kwargs['stream'] = True
-        response = self.request('GET', url, **kwargs)
         filename = kwargs.pop('filename', None)
+        response = self.request('GET', url, **kwargs)
         if 300 > response.status_code >= 200:
             if not filename:
                 filename = str.replace(re.findall("filename=(.+)", response.headers['content-disposition'])[0], "\"", "")
