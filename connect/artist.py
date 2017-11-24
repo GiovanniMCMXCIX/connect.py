@@ -46,10 +46,10 @@ class Artist:
         The artist release years.
     """
 
-    __slots__ = [
+    __slots__ = (
         'id', 'name', 'vanity_uri', 'profile_image_id', 'profile_image_url',
-        'about', 'bookings', 'management_detail', 'urls', 'years', '_releases'
-    ]
+        'about', 'bookings', 'management_detail', 'urls', 'years', '_releases', '_http'
+    )
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
@@ -62,6 +62,7 @@ class Artist:
         self.management_detail = kwargs.pop('managementDetail', None)
         self.urls = kwargs.pop('urls')
         self.years = kwargs.pop('years')
+        self._http = kwargs.pop('http', None)
         self._releases = {}
 
     def __eq__(self, other):
@@ -84,11 +85,12 @@ class Artist:
         else:
             from .http import HTTPClient
             from .release import Release
-            http = HTTPClient()
+            http = self._http or HTTPClient()
             releases = http.get_artist_releases(self.id)
-            http.close()
+            if not self._http:
+                http.close()
             for data in releases['results']:
-                release = Release(**data)
+                release = Release(http=self._http, **data)
                 self._add_release(release)
             return list(self._releases.values())
 
@@ -104,7 +106,7 @@ class ArtistEntry:
         The artist name.
     """
 
-    __slots__ = ['id', 'name']
+    __slots__ = ('id', 'name')
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('artistId')

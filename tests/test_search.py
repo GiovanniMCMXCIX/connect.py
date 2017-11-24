@@ -36,36 +36,35 @@ class TestSearch(unittest.TestCase):
         releases = self.connect.search_release('friends')
         print('\n[connect.Client.search_release] Found the following:')
         for release in releases:
-            print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+            print(f'[{release.catalog_id}] Released on {release.release_date}, has {len(release.tracks)} track(s) and with the title {release.title}')
         self.assertEqual(releases[0], self.connect.get_release('MCEP071'))
 
     def test_release_adv(self):
         releases = self.connect.search_release_advanced('FTW', 'Lets Be Friends')
         print('\n[connect.Client.search_release_advanced] Found the following:')
         for release in releases:
-            print('[{0.catalog_id}] Released on {0.release_date}, has {1} track(s) and with the title {0.title}'.format(release, len(release.tracks)))
+            print(f'[{release.catalog_id}] Released on {release.release_date}, has {len(release.tracks)} track(s) and with the title {release.title}')
         self.assertEqual(releases[0], self.connect.get_release('MCS194'))
 
     def test_track(self):
         tracks = self.connect.search_track('you')
         print('\n[connect.Client.search_track] Found the following:')
         for track in tracks:
-            print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
+            print(f'{track.title} by {track.artists} with the genre(s) {", ".join(track.genres)} and featured on {len(track.albums)} release(s)')
         self.assertEqual(tracks[0], self.connect.get_track('5175cd4e0695c7ac5d000033'))
 
     def test_track_adv(self):
-        tracks = self.connect.search_track_advanced("Do You Don't You", 'Haywyre')
+        tracks = self.connect.search_track_advanced('Do You Don\'t You', 'Haywyre')
         print('\n[connect.Client.search_track_advanced] Found the following:')
         for track in tracks:
-            print('{0.title} by {0.artists} with the genre(s) {1} and featured on {2} release(s)'.format(track, ', '.join(track.genres), len(track.albums)))
+            print(f'{track.title} by {track.artists} with the genre(s) {", ".join(track.genres)} and featured on {len(track.albums)} release(s)')
         self.assertEqual(tracks[0], self.connect.get_track('56a2773c5050dd875854cf85'))
 
     def test_artist(self):
         artists = self.connect.search_artist('grant')
         print('\n[connect.Client.search_artist] Found the following:')
         for artist in artists:
-            print("{0.name}, that has {1} release(s) and it's featured on the following year(s): {2}".format(artist, len(artist.releases),
-                                                                                                             ', '.join(str(year) for year in artist.years)))
+            print(f'{artist}, that has {len(artist.releases)} release(s) and it\'s featured on the following year(s): {", ".join(str(year) for year in artist.years)}')
         self.assertEqual(artists[1], self.connect.get_artist('grant'))
 
     def tearDown(self):

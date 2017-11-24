@@ -112,9 +112,9 @@ class Client:
                     json_entries.append({'trackId': entry[0].id, 'releaseId': entry[1].id})
                 else:
                     raise ValueError(f'The track "{entry[0]}" is not in the release\'s "{entry[1]}" track list.')
-            return Playlist(**self.http.create_playlist(name=name, public=public, entries=json_entries))
+            return Playlist(http=self.http, **self.http.create_playlist(name=name, public=public, entries=json_entries))
         else:
-            return Playlist(**self.http.create_playlist(name=name, public=public))
+            return Playlist(http=self.http, **self.http.create_playlist(name=name, public=public))
 
     def edit_playlist(self, playlist: Playlist, *, name: str = None, public: bool = False) -> Playlist:
         """Edits a playlist.
@@ -138,7 +138,7 @@ class Client:
         Playlist
             The playlist that was edited.
         """
-        return Playlist(**self.http.edit_playlist(playlist_id=playlist.id, name=name, public=public))
+        return Playlist(http=self.http, **self.http.edit_playlist(playlist_id=playlist.id, name=name, public=public))
 
     def edit_profile(self, *, name: str = None, real_name: str = None, location: str = None, password: str = None):
         """Edits the current profile of the client.
@@ -185,7 +185,7 @@ class Client:
             The playlist with the track that was added.
         """
         if find(lambda a: a.id == release.id, track.albums):
-            return Playlist(**self.http.add_playlist_track(playlist_id=playlist.id, track_id=track.id, release_id=release.id))
+            return Playlist(http=self.http, **self.http.add_playlist_track(playlist_id=playlist.id, track_id=track.id, release_id=release.id))
         else:
             raise ValueError(f'The track "{track}" is not in the release\'s "{release}" track list.')
 
@@ -217,7 +217,7 @@ class Client:
                 json_entries.append({'trackId': entry[0].id, 'releaseId': entry[1].id})
             else:
                 raise ValueError(f'The track "{entry[0]}" is not in the release\'s "{entry[1]}" track list.')
-        return Playlist(**self.http.add_playlist_tracks(playlist_id=playlist.id, entries=json_entries))
+        return Playlist(http=self.http, **self.http.add_playlist_tracks(playlist_id=playlist.id, entries=json_entries))
 
     def add_reddit_username(self, username: str):
         """Adds the reddit username to the current profile of the client.
@@ -269,7 +269,7 @@ class Client:
         Playlist
             The playlist with the track that was deleted.
         """
-        return Playlist(**self.http.delete_playlist_track(playlist_id=playlist.id, track_id=track.id))
+        return Playlist(http=self.http, **self.http.delete_playlist_track(playlist_id=playlist.id, track_id=track.id))
 
     def get_discord_invite(self) -> str:
         """Gets an invite for the gold discord channel on the monstercat discord guild.
@@ -300,7 +300,7 @@ class Client:
         Release
             Release that was requested with the given ID/catalog ID.
         """
-        return Release(**self.http.get_release(catalog_id))
+        return Release(http=self.http, **self.http.get_release(catalog_id))
 
     def get_track(self, track_id: str) -> Track:
         """Returns a track with the given ID.
@@ -321,7 +321,7 @@ class Client:
         Track
             Track that was requested with the given ID.
         """
-        return Track(**self.http.get_track(track_id))
+        return Track(http=self.http, **self.http.get_track(track_id))
 
     def get_artist(self, artist_id: str) -> Artist:
         """Returns a artist with the given ID.
@@ -341,7 +341,7 @@ class Client:
         Artist
             Artist that was requested with the given ID/vanity uri.
         """
-        return Artist(**self.http.get_artist(artist_id))
+        return Artist(http=self.http, **self.http.get_artist(artist_id))
 
     def get_playlist(self, playlist_id: str) -> Playlist:
         """Returns a playlist with the given ID.
@@ -363,7 +363,7 @@ class Client:
         Playlist
             Playlist that was requested with the given ID.
         """
-        return Playlist(**self.http.get_playlist(playlist_id))
+        return Playlist(http=self.http, **self.http.get_playlist(playlist_id))
 
     def get_all_releases(self, *, singles: bool = True, eps: bool = True, albums: bool = True, podcasts: bool = False, limit: int = None, skip: int = None) -> List[Release]:
         """Retrieves every release the client can access.
@@ -390,7 +390,7 @@ class Client:
         """
         releases = []
         for release in self.http.get_all_releases(singles=singles, eps=eps, albums=albums, podcasts=podcasts, limit=limit, skip=skip)['results']:
-            releases.append(Release(**release))
+            releases.append(Release(http=self.http, **release))
         return releases
 
     def get_all_tracks(self, *, limit: int = None, skip: int = None) -> List[Track]:
@@ -432,7 +432,7 @@ class Client:
         """
         artists = []
         for artist in self.http.get_all_artists(year=year, limit=limit, skip=skip)['results']:
-            artists.append(Artist(**artist))
+            artists.append(Artist(http=self.http, **artist))
         return artists
 
     def get_all_playlists(self, *, limit: int = None, skip: int = None) -> List[Playlist]:
@@ -457,7 +457,7 @@ class Client:
         """
         playlists = []
         for playlist in self.http.get_all_playlists(limit=limit, skip=skip)['results']:
-            playlists.append(Playlist(**playlist))
+            playlists.append(Playlist(http=self.http, **playlist))
         return playlists
 
     def get_browse_entries(self, *, types: List[str] = None, genres: List[str] = None, tags: List[str] = None, limit: int = None, skip: int = None) -> List[BrowseEntry]:
@@ -520,7 +520,7 @@ class Client:
         """
         releases = []
         for release in self.http.request('GET', f'{self.http.RELEASE}?fuzzyOr=title,{quote(term)},renderedArtists,{quote(term)}&limit={limit}&skip={skip}')['results']:
-            releases.append(Release(**release))
+            releases.append(Release(http=self.http, **release))
         if not releases:
             raise NotFound('No release was found.')
         else:
@@ -552,7 +552,7 @@ class Client:
         """
         releases = []
         for release in self.http.request('GET', f'{self.http.RELEASE}?fuzzy=title,{quote(title)},renderedArtists,{quote(artists)}&limit={limit}&skip={skip}')['results']:
-            releases.append(Release(**release))
+            releases.append(Release(http=self.http, **release))
         if not releases:
             raise NotFound('No release was found.')
         else:
@@ -649,7 +649,7 @@ class Client:
         if year:
             base = f'{base},year,{year}'
         for artist in self.http.request('GET', base)['results']:
-            artists.append(Artist(**artist))
+            artists.append(Artist(http=self.http, **artist))
         if not artists:
             raise NotFound('No artist was found.')
         else:
@@ -681,7 +681,7 @@ class Client:
         """
         playlists = []
         for playlist in self.http.request('GET', f'{self.http.PLAYLIST}?fuzzyOr=name,{quote(term)}&limit={limit}&skip={skip}')['results']:
-            playlists.append(Playlist(**playlist))
+            playlists.append(Playlist(http=self.http, **playlist))
         if not playlists:
             raise NotFound('No playlist was found.')
         else:

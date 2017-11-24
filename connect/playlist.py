@@ -45,7 +45,7 @@ class Playlist:
             If the playlist is deleted.
         """
 
-    __slots__ = ['id', 'name', 'owner_id', 'is_public', 'is_deleted', '_tracks']
+    __slots__ = ('id', 'name', 'owner_id', 'is_public', 'is_deleted', '_tracks', '_http')
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('_id')
@@ -53,6 +53,7 @@ class Playlist:
         self.owner_id = kwargs.pop('userId')
         self.is_public = kwargs.pop('public')
         self.is_deleted = kwargs.pop('deleted')
+        self._http = kwargs.pop('http', None)
         self._tracks = {}
 
     def __eq__(self, other):
@@ -73,9 +74,10 @@ class Playlist:
             return list(self._tracks.values())
         else:
             from .http import HTTPClient
-            http = HTTPClient()
+            http = self._http or HTTPClient()
             tracklist = http.get_playlist_tracklist(self.id)
-            http.close()
+            if not self._http:
+                http.close()
             for data in tracklist['results']:
                 track = PlaylistEntry(**data)
                 self._add_track(track)
@@ -118,7 +120,7 @@ class PlaylistEntry(Track):
         Indicates if the track can be downloaded for free.
     """
 
-    __slots__ = ['release']
+    __slots__ = 'release'
 
     def __init__(self, **kwargs):
         self.release = ReleaseEntry(**kwargs.pop('release'))
